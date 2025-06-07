@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Folder, FileText, Image, Film, Music, Archive, Heart, Share } from "lucide-react";
@@ -6,6 +5,7 @@ import { FileItem } from "../config";
 
 interface OneDiskFileAreaProps {
   files: FileItem[];
+  viewMode: 'list' | 'grid';
   onFileClick: (file: FileItem) => void;
   onFavoriteToggle: (fileId: string) => void;
   onShareClick: (fileId: string) => void;
@@ -13,6 +13,7 @@ interface OneDiskFileAreaProps {
 
 export function OneDiskFileArea({
   files,
+  viewMode,
   onFileClick,
   onFavoriteToggle,
   onShareClick
