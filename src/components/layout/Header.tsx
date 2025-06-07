@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Bell, Settings, LogOut, User, Folder } from "lucide-react";
+import { Menu, Bell, Settings, LogOut, User, Folder, HardDrive } from "lucide-react";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -72,6 +72,10 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuItem>
                 <Folder className="mr-2 h-4 w-4" />
                 Vendas
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HardDrive className="mr-2 h-4 w-4" />
+                OneDisk
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

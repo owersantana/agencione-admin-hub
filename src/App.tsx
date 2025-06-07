@@ -16,6 +16,9 @@ import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
+// Module pages
+import OneDisk from "./modules/onedisk/pages/OneDisk";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -43,6 +46,7 @@ const App = () => (
             <Route path="clientes/novo" element={<div className="p-6">Novo Cliente em desenvolvimento</div>} />
             <Route path="agenda" element={<div className="p-6">Página de Agenda em desenvolvimento</div>} />
             <Route path="vendas" element={<div className="p-6">Página de Vendas em desenvolvimento</div>} />
+            <Route path="onedisk" element={<OneDisk />} />
           </Route>
           
           {/* Catch-all route */}

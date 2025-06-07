@@ -43,6 +43,14 @@ export const AVAILABLE_MODULES: ModuleConfig[] = [
     routes: ["/dashboard/agenda", "/dashboard/servicos"]
   },
   {
+    id: "onedisk",
+    name: "OneDisk",
+    description: "Sistema de armazenamento em nuvem",
+    enabled: true,
+    icon: "hard-drive",
+    routes: ["/dashboard/onedisk"]
+  },
+  {
     id: "marketing",
     name: "Marketing",
     description: "Campanhas e automação de marketing",
