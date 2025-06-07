@@ -1,9 +1,10 @@
 
 import { Button } from "@/components/ui/button";
-import { HardDrive, Home, ArrowLeft, ArrowRight, FolderPlus, Trash2, Share, Info } from "lucide-react";
+import { HardDrive, Home, ArrowLeft, ArrowRight, FolderPlus, Trash2, Share, Info, List, Grid3X3 } from "lucide-react";
 
 interface OneDiskToolbarProps {
   bucketName: string;
+  viewMode: 'list' | 'grid';
   onNavigateHome: () => void;
   onNavigateBack: () => void;
   onNavigateForward: () => void;
@@ -11,17 +12,20 @@ interface OneDiskToolbarProps {
   onDelete: () => void;
   onShare: () => void;
   onInfo: () => void;
+  onViewModeChange: (mode: 'list' | 'grid') => void;
 }
 
 export function OneDiskToolbar({
   bucketName,
+  viewMode,
   onNavigateHome,
   onNavigateBack,
   onNavigateForward,
   onCreateFolder,
   onDelete,
   onShare,
-  onInfo
+  onInfo,
+  onViewModeChange
 }: OneDiskToolbarProps) {
   return (
     <div className="flex items-center justify-between p-4 border-b border-border bg-background">
@@ -54,6 +58,21 @@ export function OneDiskToolbar({
         </Button>
         <Button variant="ghost" size="sm" onClick={onInfo}>
           <Info size={16} />
+        </Button>
+        <div className="w-px h-6 bg-border mx-2" />
+        <Button 
+          variant={viewMode === 'list' ? 'default' : 'ghost'} 
+          size="sm" 
+          onClick={() => onViewModeChange('list')}
+        >
+          <List size={16} />
+        </Button>
+        <Button 
+          variant={viewMode === 'grid' ? 'default' : 'ghost'} 
+          size="sm" 
+          onClick={() => onViewModeChange('grid')}
+        >
+          <Grid3X3 size={16} />
         </Button>
       </div>
     </div>

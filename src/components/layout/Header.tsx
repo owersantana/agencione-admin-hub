@@ -7,13 +7,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Bell, Settings, LogOut, User, Folder, HardDrive } from "lucide-react";
+import { Menu, Settings, LogOut, User, Folder, HardDrive, Maximize, Sun, Moon } from "lucide-react";
+import { NotificationDropdown } from "./NotificationDropdown";
+import { useState } from "react";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between h-full px-4">
@@ -41,12 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Right side */}
         <div className="flex items-center space-x-2">
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell size={20} />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-              3
-            </span>
-          </Button>
+          <NotificationDropdown />
 
           {/* Apps menu */}
           <DropdownMenu>
@@ -80,12 +95,14 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Fullscreen toggle */}
+          <Button variant="ghost" size="icon" onClick={toggleFullscreen}>
+            <Maximize size={20} />
+          </Button>
+
           {/* Theme toggle */}
-          <Button variant="ghost" size="icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="5"/>
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
+          <Button variant="ghost" size="icon" onClick={toggleDarkMode}>
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </Button>
 
           {/* User menu */}

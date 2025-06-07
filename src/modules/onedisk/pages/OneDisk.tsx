@@ -7,6 +7,7 @@ import { OneDiskFooter } from "../components/OneDiskFooter";
 import { FileItem, BucketInfo } from "../config";
 
 export default function OneDisk() {
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [bucketInfo] = useState<BucketInfo>({
     id: "bucket-1",
     name: "Meu Bucket",
@@ -87,6 +88,7 @@ export default function OneDisk() {
     <div className="h-full flex flex-col">
       <OneDiskToolbar
         bucketName={bucketInfo.name}
+        viewMode={viewMode}
         onNavigateHome={() => console.log("Navigate home")}
         onNavigateBack={() => console.log("Navigate back")}
         onNavigateForward={() => console.log("Navigate forward")}
@@ -94,6 +96,7 @@ export default function OneDisk() {
         onDelete={() => console.log("Delete")}
         onShare={() => console.log("Share")}
         onInfo={() => console.log("Info")}
+        onViewModeChange={setViewMode}
       />
       
       <div className="flex flex-1 overflow-hidden">
@@ -109,6 +112,7 @@ export default function OneDisk() {
         <div className="flex-1 flex flex-col">
           <OneDiskFileArea
             files={files}
+            viewMode={viewMode}
             onFileClick={handleFileClick}
             onFavoriteToggle={handleFavoriteToggle}
             onShareClick={handleShareClick}

@@ -1,18 +1,18 @@
 
 // Configuração global da marca - modifique aqui para whitelabel
 export const BRAND_CONFIG = {
-  name: "OneAgenda",
+  name: "Agencione",
   tagline: "Gerencie seu negócio de forma inteligente",
   
   // URLs e links
-  website: "https://oneagenda.com.br",
+  website: "https://agencione.com.br",
   support: "https://agencione.com.br/suporte",
   
   // Redes sociais
   social: {
-    instagram: "https://instagram.com/oneagenda",
-    facebook: "https://facebook.com/oneagenda", 
-    tiktok: "https://tiktok.com/@oneagenda"
+    instagram: "https://instagram.com/agencione",
+    facebook: "https://facebook.com/agencione", 
+    tiktok: "https://tiktok.com/@agencione"
   },
   
   // Configurações de autenticação
