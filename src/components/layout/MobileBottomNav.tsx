@@ -1,32 +1,32 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { folder, user, bell, settings, chevron-up } from "lucide-react";
+import { Folder, User, Bell, Settings, ChevronUp } from "lucide-react";
 
 const navItems = [
   {
     title: "Dashboard",
-    icon: folder,
+    icon: Folder,
     href: "/dashboard",
   },
   {
     title: "Clientes",
-    icon: user,
+    icon: User,
     href: "/dashboard/clientes",
   },
   {
     title: "Agenda",
-    icon: bell,
+    icon: Bell,
     href: "/dashboard/agenda",
   },
   {
     title: "Vendas",
-    icon: chevron-up,
+    icon: ChevronUp,
     href: "/dashboard/vendas",
   },
   {
     title: "Perfil",
-    icon: settings,
+    icon: Settings,
     href: "/dashboard/perfil",
   },
 ];

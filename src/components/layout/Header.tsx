@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { menu, bell, settings, log-out, user } from "lucide-react";
+import { Menu, Bell, Settings, LogOut, User, Folder } from "lucide-react";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -25,7 +25,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={onMenuClick}
             className="lg:hidden"
           >
-            <menu size={20} />
+            <Menu size={20} />
           </Button>
           
           <Button
@@ -34,7 +34,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={onMenuClick}
             className="hidden lg:flex"
           >
-            <menu size={20} />
+            <Menu size={20} />
           </Button>
         </div>
 
@@ -42,7 +42,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center space-x-2">
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
-            <bell size={20} />
+            <Bell size={20} />
             <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
               3
             </span>
@@ -62,15 +62,15 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem>
-                <folder className="mr-2 h-4 w-4" />
+                <Folder className="mr-2 h-4 w-4" />
                 CRM
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <folder className="mr-2 h-4 w-4" />
+                <Folder className="mr-2 h-4 w-4" />
                 Financeiro
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <folder className="mr-2 h-4 w-4" />
+                <Folder className="mr-2 h-4 w-4" />
                 Vendas
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -96,15 +96,15 @@ export function Header({ onMenuClick }: HeaderProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem>
-                <user className="mr-2 h-4 w-4" />
+                <User className="mr-2 h-4 w-4" />
                 Perfil
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <settings className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 h-4 w-4" />
                 Configurações
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <log-out className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>

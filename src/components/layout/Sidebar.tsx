@@ -11,12 +11,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  chevron-down,
-  user,
-  settings,
-  folder,
-  bell,
-  log-out
+  ChevronDown,
+  User,
+  Settings,
+  Folder,
+  Bell,
+  LogOut
 } from "lucide-react";
 
 interface MenuItem {
@@ -30,33 +30,33 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   {
     title: "Dashboard",
-    icon: <folder size={20} />,
+    icon: <Folder size={20} />,
     isHeader: true,
   },
   {
     title: "Visão Geral",
-    icon: <folder size={20} />,
+    icon: <Folder size={20} />,
     href: "/dashboard",
   },
   {
     title: "Meu Negócio",
-    icon: <settings size={20} />,
+    icon: <Settings size={20} />,
     children: [
-      { title: "Perfil", icon: <user size={16} />, href: "/dashboard/perfil" },
-      { title: "Configurações", icon: <settings size={16} />, href: "/dashboard/configuracoes" },
+      { title: "Perfil", icon: <User size={16} />, href: "/dashboard/perfil" },
+      { title: "Configurações", icon: <Settings size={16} />, href: "/dashboard/configuracoes" },
     ],
   },
   {
     title: "Gestão",
-    icon: <folder size={20} />,
+    icon: <Folder size={20} />,
     isHeader: true,
   },
   {
     title: "Clientes",
-    icon: <user size={20} />,
+    icon: <User size={20} />,
     children: [
-      { title: "Lista de Clientes", icon: <user size={16} />, href: "/dashboard/clientes" },
-      { title: "Novo Cliente", icon: <user size={16} />, href: "/dashboard/clientes/novo" },
+      { title: "Lista de Clientes", icon: <User size={16} />, href: "/dashboard/clientes" },
+      { title: "Novo Cliente", icon: <User size={16} />, href: "/dashboard/clientes/novo" },
     ],
   },
 ];
@@ -103,7 +103,7 @@ export function Sidebar() {
                       {item.icon}
                       <span>{item.title}</span>
                     </div>
-                    <chevron-down
+                    <ChevronDown
                       size={16}
                       className={cn(
                         "transition-transform",
@@ -172,7 +172,7 @@ export function Sidebar() {
           size="sm"
           className="w-full mt-2 justify-start text-sidebar-foreground hover:bg-sidebar-accent"
         >
-          <log-out size={16} className="mr-2" />
+          <LogOut size={16} className="mr-2" />
           Sair
         </Button>
       </div>

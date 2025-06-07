@@ -6,6 +6,7 @@ import { Header } from "./Header";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { BRAND_CONFIG } from "@/config/brand";
 import { cn } from "@/lib/utils";
+import { Bell } from "lucide-react";
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -31,7 +32,7 @@ export function DashboardLayout() {
           </h1>
           
           <button className="p-2 hover:bg-accent rounded-lg relative">
-            <bell size={20} />
+            <Bell size={20} />
             <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
               3
             </span>
