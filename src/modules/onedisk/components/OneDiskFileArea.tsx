@@ -1,22 +1,30 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Folder, FileText, Image, Film, Music, Archive, Heart, Share } from "lucide-react";
 import { FileItem } from "../config";
 
 interface OneDiskFileAreaProps {
   files: FileItem[];
   viewMode: 'list' | 'grid';
+  selectedItems: string[];
   onFileClick: (file: FileItem) => void;
   onFavoriteToggle: (fileId: string) => void;
   onShareClick: (fileId: string) => void;
+  onItemSelect: (fileId: string, selected: boolean) => void;
+  onSelectAll: (selected: boolean) => void;
 }
 
 export function OneDiskFileArea({
   files,
   viewMode,
+  selectedItems,
   onFileClick,
   onFavoriteToggle,
-  onShareClick
+  onShareClick,
+  onItemSelect,
+  onSelectAll
 }: OneDiskFileAreaProps) {
   const getFileIcon = (file: FileItem) => {
     if (file.type === 'folder') return <Folder size={20} className="text-blue-500" />;
@@ -47,11 +55,80 @@ export function OneDiskFileArea({
     }).format(date);
   };
 
+  const allSelected = files.length > 0 && files.every(file => selectedItems.includes(file.id));
+  const someSelected = selectedItems.length > 0 && !allSelected;
+
+  if (viewMode === 'grid') {
+    return (
+      <div className="flex-1 overflow-auto p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {files.map((file) => (
+            <div
+              key={file.id}
+              className={`p-4 border rounded-lg cursor-pointer hover:bg-accent transition-colors ${
+                selectedItems.includes(file.id) ? 'bg-accent border-primary' : ''
+              }`}
+              onClick={() => onFileClick(file)}
+            >
+              <div className="flex flex-col items-center space-y-2">
+                <div className="flex items-center justify-between w-full">
+                  <Checkbox
+                    checked={selectedItems.includes(file.id)}
+                    onCheckedChange={(checked) => onItemSelect(file.id, !!checked)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="flex space-x-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFavoriteToggle(file.id);
+                      }}
+                      className={file.favorite ? "text-red-500" : "text-muted-foreground"}
+                    >
+                      <Heart size={12} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onShareClick(file.id);
+                      }}
+                      className={file.shared ? "text-blue-500" : "text-muted-foreground"}
+                    >
+                      <Share size={12} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-center">
+                  {getFileIcon(file)}
+                  <p className="text-sm font-medium mt-2 truncate w-full">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-auto">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-12">
+              <Checkbox
+                checked={allSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = someSelected;
+                }}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
             <TableHead className="w-12"></TableHead>
             <TableHead>Nome</TableHead>
             <TableHead className="w-32">Tamanho</TableHead>
@@ -63,9 +140,18 @@ export function OneDiskFileArea({
           {files.map((file) => (
             <TableRow 
               key={file.id} 
-              className="cursor-pointer hover:bg-accent"
+              className={`cursor-pointer hover:bg-accent ${
+                selectedItems.includes(file.id) ? 'bg-accent' : ''
+              }`}
               onClick={() => onFileClick(file)}
             >
+              <TableCell>
+                <Checkbox
+                  checked={selectedItems.includes(file.id)}
+                  onCheckedChange={(checked) => onItemSelect(file.id, !!checked)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </TableCell>
               <TableCell>
                 {getFileIcon(file)}
               </TableCell>

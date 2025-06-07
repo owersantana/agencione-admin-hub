@@ -8,6 +8,7 @@ import { FileItem, BucketInfo } from "../config";
 
 export default function OneDisk() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bucketInfo] = useState<BucketInfo>({
     id: "bucket-1",
     name: "Meu Bucket",
@@ -18,7 +19,7 @@ export default function OneDisk() {
     objectsCount: 1247
   });
 
-  const [files] = useState<FileItem[]>([
+  const [files, setFiles] = useState<FileItem[]>([
     {
       id: "1",
       name: "Pasta de Imagens",
@@ -73,11 +74,59 @@ export default function OneDisk() {
   };
 
   const handleFavoriteToggle = (fileId: string) => {
-    console.log("Toggle favorite:", fileId);
+    setFiles(prev => prev.map(file => 
+      file.id === fileId ? { ...file, favorite: !file.favorite } : file
+    ));
   };
 
   const handleShareClick = (fileId: string) => {
-    console.log("Share file:", fileId);
+    setFiles(prev => prev.map(file => 
+      file.id === fileId ? { ...file, shared: !file.shared } : file
+    ));
+  };
+
+  const handleCreateFolder = () => {
+    const newFolder: FileItem = {
+      id: `folder-${Date.now()}`,
+      name: "Nova Pasta",
+      type: "folder",
+      size: 0,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      shared: false,
+      favorite: false,
+      path: `${bucketInfo.currentPath}/nova-pasta`,
+    };
+    
+    setFiles(prev => [newFolder, ...prev]);
+    console.log("Nova pasta criada");
+  };
+
+  const handleItemSelect = (fileId: string, selected: boolean) => {
+    setSelectedItems(prev => 
+      selected 
+        ? [...prev, fileId]
+        : prev.filter(id => id !== fileId)
+    );
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    setSelectedItems(selected ? files.map(file => file.id) : []);
+  };
+
+  const handleDeleteSelected = () => {
+    setFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
+    setSelectedItems([]);
+    console.log("Itens excluídos:", selectedItems);
+  };
+
+  const handleZipSelected = () => {
+    console.log("Criando ZIP dos itens:", selectedItems);
+    // Aqui seria implementada a lógica de criação do ZIP
+  };
+
+  const handleClearSelection = () => {
+    setSelectedItems([]);
   };
 
   const handlePathClick = (path: string) => {
@@ -92,7 +141,7 @@ export default function OneDisk() {
         onNavigateHome={() => console.log("Navigate home")}
         onNavigateBack={() => console.log("Navigate back")}
         onNavigateForward={() => console.log("Navigate forward")}
-        onCreateFolder={() => console.log("Create folder")}
+        onCreateFolder={handleCreateFolder}
         onDelete={() => console.log("Delete")}
         onShare={() => console.log("Share")}
         onInfo={() => console.log("Info")}
@@ -113,15 +162,22 @@ export default function OneDisk() {
           <OneDiskFileArea
             files={files}
             viewMode={viewMode}
+            selectedItems={selectedItems}
             onFileClick={handleFileClick}
             onFavoriteToggle={handleFavoriteToggle}
             onShareClick={handleShareClick}
+            onItemSelect={handleItemSelect}
+            onSelectAll={handleSelectAll}
           />
           
           <OneDiskFooter
             currentPath={bucketInfo.currentPath}
             bucketUuid={bucketInfo.uuid}
+            selectedItems={selectedItems}
             onPathClick={handlePathClick}
+            onDeleteSelected={handleDeleteSelected}
+            onZipSelected={handleZipSelected}
+            onClearSelection={handleClearSelection}
           />
         </div>
       </div>

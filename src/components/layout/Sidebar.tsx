@@ -63,7 +63,8 @@ const menuItems: MenuItem[] = [
 
 export function Sidebar() {
   const location = useLocation();
-  const [openItems, setOpenItems] = useState<string[]>(["Meu Negócio", "Clientes"]);
+  // Menus fechados por padrão
+  const [openItems, setOpenItems] = useState<string[]>([]);
 
   const toggleItem = (title: string) => {
     setOpenItems(prev =>
