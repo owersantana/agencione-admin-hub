@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { user } from "lucide-react";
+import { User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -41,7 +41,7 @@ export default function Login() {
 
   return (
     <AuthLayout
-      icon={<user size={48} />}
+      icon={<User size={48} />}
       title="Faça seu login"
       description="Acesse sua conta para continuar"
     >

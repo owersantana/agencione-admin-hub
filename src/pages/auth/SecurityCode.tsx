@@ -5,7 +5,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function SecurityCode() {
@@ -45,7 +45,7 @@ export default function SecurityCode() {
 
   return (
     <AuthLayout
-      icon={<settings size={48} />}
+      icon={<Settings size={48} />}
       title="Código de segurança"
       description="Digite o código de 6 dígitos enviado para seu e-mail"
     >

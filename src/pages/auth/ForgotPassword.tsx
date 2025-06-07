@@ -5,7 +5,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function ForgotPassword() {
@@ -38,7 +38,7 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout
-      icon={<bell size={48} />}
+      icon={<Bell size={48} />}
       title="Recuperar senha"
       description="Informe seu e-mail para receber as instruções de recuperação"
     >

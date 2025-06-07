@@ -5,7 +5,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function NewPassword() {
@@ -52,7 +52,7 @@ export default function NewPassword() {
 
   return (
     <AuthLayout
-      icon={<settings size={48} />}
+      icon={<Settings size={48} />}
       title="Nova senha"
       description="Crie uma nova senha segura para sua conta"
     >
