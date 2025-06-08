@@ -21,7 +21,9 @@ import {
   Share,
   Info,
   Upload,
-  Plus
+  Plus,
+  Heart,
+  Share2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,114 +32,49 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-
-interface FileItem {
-  id: string;
-  name: string;
-  type: 'folder' | 'file';
-  size?: number;
-  modified: Date;
-  fileType?: string;
-  thumbnail?: string;
-}
+import { FileItem } from '../config';
 
 interface OneDiskFileAreaProps {
-  currentPath: string;
+  files: FileItem[];
   viewMode: 'list' | 'grid';
+  selectedItems: string[];
+  editingFolderId: string | null;
   isInTrash?: boolean;
-  onNavigate: (path: string) => void;
+  onFileClick: (file: FileItem) => void;
+  onFavoriteToggle: (fileId: string) => void;
+  onShareClick: (fileId: string) => void;
   onItemSelect: (item: FileItem) => void;
-  onItemDoubleClick: (item: FileItem) => void;
-  onUpload: (files: FileList) => void;
+  onSelectAll: (selected: boolean) => void;
+  onFolderRename: (folderId: string, newName: string) => void;
 }
 
-// Mock data
-const mockFiles: FileItem[] = [
-  {
-    id: '1',
-    name: 'Documentos',
-    type: 'folder',
-    modified: new Date('2024-01-15'),
-  },
-  {
-    id: '2',
-    name: 'Imagens',
-    type: 'folder',
-    modified: new Date('2024-01-10'),
-  },
-  {
-    id: '3',
-    name: 'projeto.pdf',
-    type: 'file',
-    size: 2048000,
-    modified: new Date('2024-01-12'),
-    fileType: 'pdf',
-  },
-  {
-    id: '4',
-    name: 'apresentacao.pptx',
-    type: 'file',
-    size: 5120000,
-    modified: new Date('2024-01-08'),
-    fileType: 'presentation',
-  },
-  {
-    id: '5',
-    name: 'planilha.xlsx',
-    type: 'file',
-    size: 1024000,
-    modified: new Date('2024-01-05'),
-    fileType: 'spreadsheet',
-  },
-  {
-    id: '6',
-    name: 'video_tutorial.mp4',
-    type: 'file',
-    size: 15728640,
-    modified: new Date('2024-01-03'),
-    fileType: 'video',
-  },
-];
-
 export function OneDiskFileArea({
-  currentPath,
+  files,
   viewMode,
+  selectedItems,
+  editingFolderId,
   isInTrash = false,
-  onNavigate,
+  onFileClick,
+  onFavoriteToggle,
+  onShareClick,
   onItemSelect,
-  onItemDoubleClick,
-  onUpload
+  onSelectAll,
+  onFolderRename
 }: OneDiskFileAreaProps) {
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getFileIcon = (item: FileItem) => {
     if (item.type === 'folder') return Folder;
     
-    switch (item.fileType) {
-      case 'pdf':
-      case 'doc':
-      case 'docx':
-        return FileText;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return Image;
-      case 'zip':
-      case 'rar':
-        return Archive;
-      case 'mp3':
-      case 'wav':
-        return Music;
-      case 'mp4':
-      case 'avi':
-        return Video;
-      default:
-        return File;
-    }
+    const mimeType = item.mimeType || '';
+    if (mimeType.includes('pdf') || mimeType.includes('document')) return FileText;
+    if (mimeType.includes('image')) return Image;
+    if (mimeType.includes('zip') || mimeType.includes('archive')) return Archive;
+    if (mimeType.includes('audio')) return Music;
+    if (mimeType.includes('video')) return Video;
+    
+    return File;
   };
 
   const formatFileSize = (bytes: number) => {
@@ -160,39 +97,30 @@ export function OneDiskFileArea({
 
   const handleItemClick = (item: FileItem, event: React.MouseEvent) => {
     if (event.ctrlKey || event.metaKey) {
-      setSelectedItems(prev => 
-        prev.includes(item.id) 
-          ? prev.filter(id => id !== item.id)
-          : [...prev, item.id]
-      );
+      // Multi-select logic would go here
     } else {
-      setSelectedItems([item.id]);
+      onItemSelect(item);
     }
-    onItemSelect(item);
   };
 
   const handleItemDoubleClick = (item: FileItem) => {
-    if (item.type === 'folder') {
-      onNavigate(`${currentPath}/${item.name}`);
-    } else {
-      onItemDoubleClick(item);
-    }
+    onFileClick(item);
   };
 
   const handleRename = (item: FileItem) => {
-    setEditingItem(item.id);
-    setEditingName(item.name);
+    if (item.type === 'folder') {
+      setEditingName(item.name);
+    }
   };
 
-  const handleRenameSubmit = () => {
-    // Implementar lógica de renomear
-    console.log('Renomeando para:', editingName);
-    setEditingItem(null);
+  const handleRenameSubmit = (folderId: string) => {
+    if (editingName.trim()) {
+      onFolderRename(folderId, editingName.trim());
+    }
     setEditingName('');
   };
 
   const handleRenameCancel = () => {
-    setEditingItem(null);
     setEditingName('');
   };
 
@@ -203,32 +131,35 @@ export function OneDiskFileArea({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      onUpload(files);
+      console.log('Files selected for upload:', files);
+      // Upload logic would be implemented here
     }
   };
 
   const renderListView = () => (
     <div className="space-y-1">
       {/* Upload area */}
-      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 mb-4 hover:border-muted-foreground/50 transition-colors">
-        <div className="text-center">
-          <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground mb-2">
-            Arraste arquivos aqui ou clique para selecionar
-          </p>
-          <Button variant="outline" onClick={handleFileUpload}>
-            <Plus className="h-4 w-4 mr-2" />
-            Selecionar arquivos
-          </Button>
+      {!isInTrash && (
+        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 mb-4 hover:border-muted-foreground/50 transition-colors">
+          <div className="text-center">
+            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground mb-2">
+              Arraste arquivos aqui ou clique para selecionar
+            </p>
+            <Button variant="outline" onClick={handleFileUpload}>
+              <Plus className="h-4 w-4 mr-2" />
+              Selecionar arquivos
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* File list */}
       <div className="space-y-1">
-        {mockFiles.map((item) => {
+        {files.map((item) => {
           const Icon = getFileIcon(item);
           const isSelected = selectedItems.includes(item.id);
-          const isEditing = editingItem === item.id;
+          const isEditing = editingFolderId === item.id;
 
           return (
             <div
@@ -243,11 +174,7 @@ export function OneDiskFileArea({
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={(checked) => {
-                  if (checked) {
-                    setSelectedItems(prev => [...prev, item.id]);
-                  } else {
-                    setSelectedItems(prev => prev.filter(id => id !== item.id));
-                  }
+                  // Checkbox logic would trigger selection
                 }}
               />
               
@@ -259,28 +186,32 @@ export function OneDiskFileArea({
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRenameSubmit();
+                      if (e.key === 'Enter') handleRenameSubmit(item.id);
                       if (e.key === 'Escape') handleRenameCancel();
                     }}
-                    onBlur={handleRenameSubmit}
+                    onBlur={() => handleRenameSubmit(item.id)}
                     className="h-7 text-sm"
                     autoFocus
                   />
                 ) : (
-                  <span className="text-sm font-medium truncate">
-                    {item.name}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium truncate">
+                      {item.name}
+                    </span>
+                    {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current" />}
+                    {item.shared && <Share2 className="h-4 w-4 text-blue-500" />}
+                  </div>
                 )}
               </div>
               
               <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                {item.size && (
+                {item.size > 0 && (
                   <span className="w-16 text-right">
                     {formatFileSize(item.size)}
                   </span>
                 )}
                 <span className="w-32 text-right">
-                  {formatDate(item.modified)}
+                  {formatDate(item.modifiedAt)}
                 </span>
               </div>
 
@@ -291,17 +222,23 @@ export function OneDiskFileArea({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleRename(item)}>
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Renomear
-                  </DropdownMenuItem>
+                  {item.type === 'folder' && (
+                    <DropdownMenuItem onClick={() => handleRename(item)}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Renomear
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem>
                     <Download className="h-4 w-4 mr-2" />
                     Baixar
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onShareClick(item.id)}>
                     <Share className="h-4 w-4 mr-2" />
                     Compartilhar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+                    <Heart className="h-4 w-4 mr-2" />
+                    {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Info className="h-4 w-4 mr-2" />
@@ -323,31 +260,33 @@ export function OneDiskFileArea({
   const renderGridView = () => (
     <div className="space-y-4">
       {/* Upload area */}
-      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors">
-        <div className="text-center">
-          <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground mb-2">
-            Arraste arquivos aqui ou clique para selecionar
-          </p>
-          <Button variant="outline" onClick={handleFileUpload}>
-            <Plus className="h-4 w-4 mr-2" />
-            Selecionar arquivos
-          </Button>
+      {!isInTrash && (
+        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors">
+          <div className="text-center">
+            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground mb-2">
+              Arraste arquivos aqui ou clique para selecionar
+            </p>
+            <Button variant="outline" onClick={handleFileUpload}>
+              <Plus className="h-4 w-4 mr-2" />
+              Selecionar arquivos
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* File grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-        {mockFiles.map((item) => {
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
+        {files.map((item) => {
           const Icon = getFileIcon(item);
           const isSelected = selectedItems.includes(item.id);
-          const isEditing = editingItem === item.id;
+          const isEditing = editingFolderId === item.id;
 
           return (
             <Card
               key={item.id}
               className={cn(
-                "cursor-pointer hover:shadow-md transition-all",
+                "cursor-pointer hover:shadow-md transition-all group relative",
                 isSelected && "ring-2 ring-primary"
               )}
               onClick={(e) => handleItemClick(item, e)}
@@ -356,18 +295,20 @@ export function OneDiskFileArea({
               <CardContent className="p-3">
                 <div className="flex flex-col items-center space-y-2">
                   <div className="relative">
-                    <Icon className="h-12 w-12 text-muted-foreground" />
+                    <Icon className="h-10 w-10 text-muted-foreground" />
                     <Checkbox
                       className="absolute -top-1 -right-1 h-4 w-4"
                       checked={isSelected}
                       onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedItems(prev => [...prev, item.id]);
-                        } else {
-                          setSelectedItems(prev => prev.filter(id => id !== item.id));
-                        }
+                        // Checkbox logic would trigger selection
                       }}
                     />
+                    
+                    {/* Status indicators */}
+                    <div className="absolute -bottom-1 -right-1 flex space-x-1">
+                      {item.favorite && <Heart className="h-3 w-3 text-red-500 fill-current" />}
+                      {item.shared && <Share2 className="h-3 w-3 text-blue-500" />}
+                    </div>
                   </div>
                   
                   <div className="w-full text-center">
@@ -376,22 +317,22 @@ export function OneDiskFileArea({
                         value={editingName}
                         onChange={(e) => setEditingName(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleRenameSubmit();
+                          if (e.key === 'Enter') handleRenameSubmit(item.id);
                           if (e.key === 'Escape') handleRenameCancel();
                         }}
-                        onBlur={handleRenameSubmit}
-                        className="h-7 text-xs text-center"
+                        onBlur={() => handleRenameSubmit(item.id)}
+                        className="h-6 text-xs text-center p-1"
                         autoFocus
                       />
                     ) : (
-                      <span className="text-xs font-medium text-center block truncate px-1">
+                      <span className="text-xs font-medium text-center block truncate px-1" title={item.name}>
                         {item.name}
                       </span>
                     )}
                   </div>
                   
-                  {item.size && (
-                    <Badge variant="secondary" className="text-xs">
+                  {item.size > 0 && (
+                    <Badge variant="secondary" className="text-xs px-1 py-0">
                       {formatFileSize(item.size)}
                     </Badge>
                   )}
@@ -408,17 +349,23 @@ export function OneDiskFileArea({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleRename(item)}>
-                      <Edit2 className="h-4 w-4 mr-2" />
-                      Renomear
-                    </DropdownMenuItem>
+                    {item.type === 'folder' && (
+                      <DropdownMenuItem onClick={() => handleRename(item)}>
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Renomear
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem>
                       <Download className="h-4 w-4 mr-2" />
                       Baixar
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onShareClick(item.id)}>
                       <Share className="h-4 w-4 mr-2" />
                       Compartilhar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+                      <Heart className="h-4 w-4 mr-2" />
+                      {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Info className="h-4 w-4 mr-2" />
