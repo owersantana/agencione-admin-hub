@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -91,6 +90,10 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuItem>
                 <HardDrive className="mr-2 h-4 w-4" />
                 OneDisk
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Folder className="mr-2 h-4 w-4" />
+                Kanban
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

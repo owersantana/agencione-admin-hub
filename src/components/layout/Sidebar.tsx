@@ -59,6 +59,15 @@ const menuItems: MenuItem[] = [
       { title: "Novo Cliente", icon: <User size={16} />, href: "/dashboard/clientes/novo" },
     ],
   },
+  {
+    title: "Kanban",
+    icon: <Folder size={20} />,
+    children: [
+      { title: "Projetos", icon: <Folder size={16} />, href: "/dashboard/kanban/projeto/1" },
+      { title: "Clientes", icon: <User size={16} />, href: "/dashboard/kanban/cliente/1" },
+      { title: "Geral", icon: <Settings size={16} />, href: "/dashboard/kanban/geral/1" },
+    ],
+  },
 ];
 
 export function Sidebar() {

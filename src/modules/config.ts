@@ -51,6 +51,14 @@ export const AVAILABLE_MODULES: ModuleConfig[] = [
     routes: ["/dashboard/onedisk"]
   },
   {
+    id: "kanban",
+    name: "Kanban",
+    description: "Sistema de quadros Kanban para gestão de projetos",
+    enabled: true,
+    icon: "kanban-square",
+    routes: ["/dashboard/kanban"]
+  },
+  {
     id: "marketing",
     name: "Marketing",
     description: "Campanhas e automação de marketing",
