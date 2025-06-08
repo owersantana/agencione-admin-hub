@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { OneDiskToolbar } from "../components/OneDiskToolbar";
 import { OneDiskSidebar } from "../components/OneDiskSidebar";
@@ -129,12 +128,8 @@ export default function OneDisk() {
     setSelectedItems([]);
   };
 
-  const handleItemSelect = (fileId: string, selected: boolean) => {
-    setSelectedItems(prev => 
-      selected 
-        ? [...prev, fileId]
-        : prev.filter(id => id !== fileId)
-    );
+  const handleItemSelect = (item: FileItem) => {
+    console.log("Item selected:", item.name);
   };
 
   const handleSelectAll = (selected: boolean) => {
