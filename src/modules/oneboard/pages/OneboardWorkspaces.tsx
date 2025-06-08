@@ -8,7 +8,7 @@ import { CreateBoardModal } from '../components/CreateBoardModal';
 import { useOneboardData } from '../hooks/useOneboardData';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, LayoutDashboard, Calendar, Users } from 'lucide-react';
+import { AlertCircle, LayoutDashboard, Calendar, Plus } from 'lucide-react';
 
 export default function OneboardWorkspaces() {
   const navigate = useNavigate();
@@ -70,6 +70,12 @@ export default function OneboardWorkspaces() {
                 <CreateBoardModal
                   workspaceId={workspace.id}
                   onCreateBoard={handleCreateBoard}
+                  trigger={
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Board
+                    </Button>
+                  }
                 />
               </div>
               {workspace.description && (
@@ -98,10 +104,10 @@ export default function OneboardWorkspaces() {
                       {workspace.boards.map((board) => (
                         <div
                           key={board.id}
-                          className="flex items-center justify-between p-2 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                          className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                           onClick={() => handleBoardClick(workspace.id, board.id)}
                         >
-                          <div>
+                          <div className="flex-1">
                             <h5 className="text-sm font-medium">{board.title}</h5>
                             {board.description && (
                               <p className="text-xs text-muted-foreground">
@@ -117,10 +123,21 @@ export default function OneboardWorkspaces() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="text-center py-8">
+                    <LayoutDashboard className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground mb-3">
                       Nenhum board criado ainda
                     </p>
+                    <CreateBoardModal
+                      workspaceId={workspace.id}
+                      onCreateBoard={handleCreateBoard}
+                      trigger={
+                        <Button size="sm" variant="outline">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Criar primeiro board
+                        </Button>
+                      }
+                    />
                   </div>
                 )}
               </div>

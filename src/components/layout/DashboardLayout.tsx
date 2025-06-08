@@ -9,7 +9,11 @@ import { cn } from "@/lib/utils";
 import { Bell } from "lucide-react";
 
 export function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Changed to true by default
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,7 +21,7 @@ export function DashboardLayout() {
       <div className="lg:hidden">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={toggleSidebar}
             className="p-2 hover:bg-accent rounded-lg"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -42,9 +46,11 @@ export function DashboardLayout() {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block">
-          <Sidebar />
-        </div>
+        {sidebarOpen && (
+          <div className="hidden lg:block">
+            <Sidebar />
+          </div>
+        )}
 
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
@@ -63,7 +69,7 @@ export function DashboardLayout() {
         <div className="flex-1 flex flex-col">
           {/* Desktop Header */}
           <div className="hidden lg:block">
-            <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+            <Header onMenuClick={toggleSidebar} />
           </div>
 
           {/* Page Content */}
