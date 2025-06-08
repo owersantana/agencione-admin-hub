@@ -47,7 +47,7 @@ export interface KanbanBoard {
   updatedAt: string;
 }
 
-export interface KanbanContext {
+export interface KanbanStateData {
   boards: KanbanBoard[];
   activeBoard: KanbanBoard | null;
   isLoading: boolean;

@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { KanbanBoard, KanbanColumn, KanbanItem, KanbanContext } from '../config';
+import { KanbanBoard, KanbanColumn, KanbanItem, KanbanStateData } from '../config';
 
-interface KanbanState extends KanbanContext {}
+interface KanbanState extends KanbanStateData {}
 
 type KanbanAction =
   | { type: 'SET_LOADING'; payload: boolean }
