@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
@@ -62,6 +61,8 @@ export function OneDiskFileItem({
   onRenameSubmit,
   onRenameCancel
 }: OneDiskFileItemProps) {
+  const [showIcons, setShowIcons] = useState(false);
+
   const getFileIcon = (item: FileItem) => {
     if (item.type === 'folder') return Folder;
     
@@ -99,19 +100,14 @@ export function OneDiskFileItem({
     return (
       <div
         className={cn(
-          "flex items-center space-x-3 p-2 rounded-lg hover:bg-accent cursor-pointer border",
-          isSelected && "bg-accent border-primary"
+          "flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer border transition-all",
+          isSelected && "bg-accent border-primary ring-1 ring-primary"
         )}
         onClick={(e) => onItemClick(item, e)}
         onDoubleClick={() => onItemDoubleClick(item)}
+        onMouseEnter={() => setShowIcons(true)}
+        onMouseLeave={() => setShowIcons(false)}
       >
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={(checked) => {
-            // Checkbox logic would trigger selection
-          }}
-        />
-        
         <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
         
         <div className="flex-1 min-w-0">
@@ -132,89 +128,92 @@ export function OneDiskFileItem({
               <span className="text-sm font-medium truncate">
                 {item.name}
               </span>
-              {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current" />}
-              {item.shared && <Share2 className="h-4 w-4 text-blue-500" />}
+              {(showIcons || isSelected) && (
+                <div className="flex items-center space-x-1">
+                  {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current" />}
+                  {item.shared && <Share2 className="h-4 w-4 text-blue-500" />}
+                </div>
+              )}
             </div>
           )}
         </div>
         
         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
           {item.size > 0 && (
-            <span className="w-16 text-right">
+            <span className="w-16 text-right hidden sm:block">
               {formatFileSize(item.size)}
             </span>
           )}
-          <span className="w-32 text-right">
+          <span className="w-32 text-right hidden md:block">
             {formatDate(item.modifiedAt)}
           </span>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {item.type === 'folder' && (
-              <DropdownMenuItem onClick={() => onRename(item)}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                Renomear
+        {(showIcons || isSelected) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {item.type === 'folder' && (
+                <DropdownMenuItem onClick={() => onRename(item)}>
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Renomear
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem>
+                <Download className="h-4 w-4 mr-2" />
+                Baixar
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem>
-              <Download className="h-4 w-4 mr-2" />
-              Baixar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onShareClick(item.id)}>
-              <Share className="h-4 w-4 mr-2" />
-              Compartilhar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
-              <Heart className="h-4 w-4 mr-2" />
-              {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Info className="h-4 w-4 mr-2" />
-              Informações
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={() => onShareClick(item.id)}>
+                <Share className="h-4 w-4 mr-2" />
+                Compartilhar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+                <Heart className="h-4 w-4 mr-2" />
+                {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Info className="h-4 w-4 mr-2" />
+                Informações
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     );
   }
 
-  // Grid view
+  // Grid view - responsivo e maior
   return (
     <Card
       className={cn(
-        "cursor-pointer hover:shadow-md transition-all group relative w-32", // Aumentando a largura dos cards
-        isSelected && "ring-2 ring-primary"
+        "cursor-pointer hover:shadow-md transition-all group relative w-full max-w-48",
+        isSelected && "ring-2 ring-primary bg-accent"
       )}
       onClick={(e) => onItemClick(item, e)}
       onDoubleClick={() => onItemDoubleClick(item)}
+      onMouseEnter={() => setShowIcons(true)}
+      onMouseLeave={() => setShowIcons(false)}
     >
-      <CardContent className="p-3">
-        <div className="flex flex-col items-center space-y-2">
+      <CardContent className="p-4">
+        <div className="flex flex-col items-center space-y-3">
           <div className="relative">
-            <Icon className="h-12 w-12 text-muted-foreground" />
-            <Checkbox
-              className="absolute -top-1 -right-1 h-4 w-4"
-              checked={isSelected}
-              onCheckedChange={(checked) => {
-                // Checkbox logic would trigger selection
-              }}
-            />
+            <Icon className="h-16 w-16 text-muted-foreground" />
             
             {/* Status indicators */}
-            <div className="absolute -bottom-1 -right-1 flex space-x-1">
-              {item.favorite && <Heart className="h-3 w-3 text-red-500 fill-current" />}
-              {item.shared && <Share2 className="h-3 w-3 text-blue-500" />}
-            </div>
+            {(showIcons || isSelected) && (
+              <div className="absolute -bottom-1 -right-1 flex space-x-1">
+                {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current bg-background rounded-full p-0.5" />}
+                {item.shared && <Share2 className="h-4 w-4 text-blue-500 bg-background rounded-full p-0.5" />}
+              </div>
+            )}
           </div>
           
           <div className="w-full text-center">
@@ -227,62 +226,64 @@ export function OneDiskFileItem({
                   if (e.key === 'Escape') onRenameCancel();
                 }}
                 onBlur={() => onRenameSubmit(item.id)}
-                className="h-6 text-xs text-center p-1"
+                className="h-8 text-sm text-center p-2"
                 autoFocus
               />
             ) : (
-              <span className="text-xs font-medium text-center block truncate px-1" title={item.name}>
+              <span className="text-sm font-medium text-center block truncate px-1" title={item.name}>
                 {item.name}
               </span>
             )}
           </div>
           
           {item.size > 0 && (
-            <Badge variant="secondary" className="text-xs px-1 py-0">
+            <Badge variant="secondary" className="text-xs px-2 py-1">
               {formatFileSize(item.size)}
             </Badge>
           )}
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {item.type === 'folder' && (
-              <DropdownMenuItem onClick={() => onRename(item)}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                Renomear
+        {(showIcons || isSelected) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 h-6 w-6 p-0"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {item.type === 'folder' && (
+                <DropdownMenuItem onClick={() => onRename(item)}>
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Renomear
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem>
+                <Download className="h-4 w-4 mr-2" />
+                Baixar
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem>
-              <Download className="h-4 w-4 mr-2" />
-              Baixar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onShareClick(item.id)}>
-              <Share className="h-4 w-4 mr-2" />
-              Compartilhar
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
-              <Heart className="h-4 w-4 mr-2" />
-              {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Info className="h-4 w-4 mr-2" />
-              Informações
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={() => onShareClick(item.id)}>
+                <Share className="h-4 w-4 mr-2" />
+                Compartilhar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+                <Heart className="h-4 w-4 mr-2" />
+                {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Info className="h-4 w-4 mr-2" />
+                Informações
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </CardContent>
     </Card>
   );

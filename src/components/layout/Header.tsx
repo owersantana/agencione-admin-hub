@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,23 +88,28 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </svg>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="grid grid-cols-3 gap-1 p-2">
+            <DropdownMenuContent align="end" className="w-64 p-4">
+              <div className="grid grid-cols-3 gap-3">
                 {appModules.map((module) => {
                   const IconComponent = module.icon;
                   return (
-                    <Button
-                      key={module.name}
-                      variant="ghost"
-                      size="sm"
-                      className={`h-12 w-12 p-0 flex flex-col items-center justify-center ${
-                        !module.enabled ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                      disabled={!module.enabled}
-                      title={module.name}
-                    >
-                      <IconComponent className="h-5 w-5" />
-                    </Button>
+                    <Tooltip key={module.name}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-16 w-16 p-0 flex flex-col items-center justify-center gap-1 ${
+                            !module.enabled ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          disabled={!module.enabled}
+                        >
+                          <IconComponent className="h-6 w-6" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{module.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </div>

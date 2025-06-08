@@ -5,6 +5,7 @@ import { OneDiskActionBar } from "./OneDiskActionBar";
 interface OneDiskFooterProps {
   currentPath: string;
   bucketUuid: string;
+  bucketName: string;
   selectedItems: string[];
   isInTrash?: boolean;
   onPathClick: (path: string) => void;
@@ -18,6 +19,7 @@ interface OneDiskFooterProps {
 export function OneDiskFooter({
   currentPath,
   bucketUuid,
+  bucketName,
   selectedItems,
   isInTrash = false,
   onPathClick,
@@ -48,23 +50,30 @@ export function OneDiskFooter({
             onClick={() => onPathClick('/')}
             className="hover:text-foreground transition-colors truncate"
           >
-            Home
+            {bucketName}
           </button>
           
-          {pathSegments.map((segment, index) => {
-            const fullPath = '/' + pathSegments.slice(0, index + 1).join('/');
-            return (
-              <div key={index} className="flex items-center space-x-1 min-w-0">
-                <ChevronRight size={14} className="flex-shrink-0" />
-                <button
-                  onClick={() => onPathClick(fullPath)}
-                  className="hover:text-foreground transition-colors truncate"
-                >
-                  {segment}
-                </button>
-              </div>
-            );
-          })}
+          {isInTrash ? (
+            <>
+              <ChevronRight size={14} className="flex-shrink-0" />
+              <span className="text-foreground">Lixeira</span>
+            </>
+          ) : (
+            pathSegments.map((segment, index) => {
+              const fullPath = '/' + pathSegments.slice(0, index + 1).join('/');
+              return (
+                <div key={index} className="flex items-center space-x-1 min-w-0">
+                  <ChevronRight size={14} className="flex-shrink-0" />
+                  <button
+                    onClick={() => onPathClick(fullPath)}
+                    className="hover:text-foreground transition-colors truncate"
+                  >
+                    {segment}
+                  </button>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Right side - Bucket UUID */}

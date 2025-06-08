@@ -1,26 +1,25 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Stage, Card } from '../config';
 import { OneboardCard } from './OneboardCard';
-import { Plus, MoreHorizontal, Edit2 } from 'lucide-react';
+import { Stage, Card as BoardCard } from '../config';
+import { Plus, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 
 interface OneboardStageProps {
   stage: Stage;
-  onAddCard?: (stageId: string, title: string) => void;
-  onEditStage?: (stage: Stage) => void;
-  onEditCard?: (card: Card) => void;
-  onDeleteCard?: (cardId: string) => void;
-  onDrop?: (stageId: string, index: number) => void;
+  onAddCard: (stageId: string, title: string, description?: string) => void;
+  onEditStage: (stage: Stage) => void;
+  onEditCard: (card: BoardCard) => void;
+  onDeleteCard: (cardId: string) => void;
 }
 
 export function OneboardStage({
@@ -28,86 +27,82 @@ export function OneboardStage({
   onAddCard,
   onEditStage,
   onEditCard,
-  onDeleteCard,
-  onDrop
+  onDeleteCard
 }: OneboardStageProps) {
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
+  const [newCardDescription, setNewCardDescription] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(stage.title);
+  const [editTitle, setEditTitle] = useState(stage.title);
 
   const handleAddCard = () => {
     if (newCardTitle.trim()) {
-      onAddCard?.(stage.id, newCardTitle.trim());
+      onAddCard(stage.id, newCardTitle.trim(), newCardDescription.trim() || undefined);
       setNewCardTitle('');
+      setNewCardDescription('');
       setIsAddingCard(false);
     }
   };
 
-  const handleTitleSubmit = () => {
-    if (editingTitle.trim() && editingTitle !== stage.title) {
-      onEditStage?.({ ...stage, title: editingTitle.trim() });
+  const handleEditTitle = () => {
+    if (editTitle.trim()) {
+      onEditStage({ ...stage, title: editTitle.trim() });
+    } else {
+      setEditTitle(stage.title);
     }
     setIsEditingTitle(false);
   };
 
-  const handleTitleCancel = () => {
-    setEditingTitle(stage.title);
-    setIsEditingTitle(false);
-  };
-
   return (
-    <div className="w-80 flex-shrink-0 bg-muted/30 rounded-lg p-4">
-      {/* Stage header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 flex-1">
+    <Card className="w-80 flex-shrink-0 h-fit">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
           {isEditingTitle ? (
             <Input
-              value={editingTitle}
-              onChange={(e) => setEditingTitle(e.target.value)}
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSubmit();
-                if (e.key === 'Escape') handleTitleCancel();
+                if (e.key === 'Enter') handleEditTitle();
+                if (e.key === 'Escape') {
+                  setEditTitle(stage.title);
+                  setIsEditingTitle(false);
+                }
               }}
-              onBlur={handleTitleSubmit}
-              className="text-sm font-medium h-8"
+              onBlur={handleEditTitle}
+              className="h-8 text-sm font-medium"
               autoFocus
             />
           ) : (
-            <>
-              <h3 
-                className="text-sm font-medium text-foreground cursor-pointer"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                {stage.title}
-              </h3>
-              <Badge variant="secondary" className="text-xs">
-                {stage.cards.length}
-              </Badge>
-            </>
+            <CardTitle className="text-sm font-medium">{stage.title}</CardTitle>
           )}
+          
+          <div className="flex items-center gap-1">
+            <Badge variant="secondary" className="text-xs">
+              {stage.cards.length}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditingTitle(true)}>
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  Renomear
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir stage
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+      </CardHeader>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-              <MoreHorizontal size={14} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsEditingTitle(true)}>
-              <Edit2 size={14} className="mr-2" />
-              Renomear
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
-              Excluir stage
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Cards */}
-      <div className="space-y-3 min-h-24">
+      <CardContent className="space-y-3">
+        {/* Cards */}
         {stage.cards.map((card) => (
           <OneboardCard
             key={card.id}
@@ -117,43 +112,46 @@ export function OneboardStage({
           />
         ))}
 
-        {/* Add card form */}
+        {/* Add new card */}
         {isAddingCard ? (
-          <div className="space-y-2 p-3 bg-background rounded-lg border">
-            <Input
-              placeholder="Digite o título do card..."
-              value={newCardTitle}
-              onChange={(e) => setNewCardTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddCard();
-                if (e.key === 'Escape') setIsAddingCard(false);
-              }}
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleAddCard}>
-                Adicionar
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => setIsAddingCard(false)}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </div>
+          <Card className="border-dashed">
+            <CardContent className="p-3 space-y-2">
+              <Input
+                placeholder="Título do card..."
+                value={newCardTitle}
+                onChange={(e) => setNewCardTitle(e.target.value)}
+                autoFocus
+              />
+              <Input
+                placeholder="Descrição (opcional)..."
+                value={newCardDescription}
+                onChange={(e) => setNewCardDescription(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleAddCard}>
+                  Adicionar
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setIsAddingCard(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <Button
             variant="ghost"
-            className="w-full h-10 border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50 hover:text-foreground"
+            className="w-full justify-start text-muted-foreground border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50"
             onClick={() => setIsAddingCard(true)}
           >
             <Plus size={16} className="mr-2" />
             Adicionar card
           </Button>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

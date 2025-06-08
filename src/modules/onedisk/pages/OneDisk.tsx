@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { OneDiskToolbar } from "../components/OneDiskToolbar";
 import { OneDiskSidebar } from "../components/OneDiskSidebar";
@@ -6,7 +7,7 @@ import { OneDiskFooter } from "../components/OneDiskFooter";
 import { FileItem, BucketInfo } from "../config";
 
 export default function OneDisk() {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid'); // Grid por padrão
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isInTrash, setIsInTrash] = useState(false);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
@@ -73,7 +74,11 @@ export default function OneDisk() {
   const [trashedFiles, setTrashedFiles] = useState<FileItem[]>([]);
 
   const handleFileClick = (file: FileItem) => {
-    console.log("File clicked:", file.name);
+    if (file.type === 'folder') {
+      console.log("Navigate to folder:", file.name);
+    } else {
+      console.log("Open file:", file.name);
+    }
   };
 
   const handleFavoriteToggle = (fileId: string) => {
@@ -91,7 +96,7 @@ export default function OneDisk() {
   };
 
   const handleCreateFolder = () => {
-    if (isInTrash) return; // Não pode criar pasta na lixeira
+    if (isInTrash) return;
     
     const newFolder: FileItem = {
       id: `folder-${Date.now()}`,
@@ -116,7 +121,6 @@ export default function OneDisk() {
         file.id === folderId ? { ...file, name: newName.trim() } : file
       ));
     } else {
-      // Se nome vazio, remove a pasta
       setFiles(prev => prev.filter(file => file.id !== folderId));
     }
     setEditingFolderId(null);
@@ -124,12 +128,17 @@ export default function OneDisk() {
 
   const handleReload = () => {
     console.log("Recarregando conteúdo...");
-    // Simula recarregamento - aqui você faria uma nova requisição
     setSelectedItems([]);
   };
 
   const handleItemSelect = (item: FileItem) => {
-    console.log("Item selected:", item.name);
+    setSelectedItems(prev => {
+      if (prev.includes(item.id)) {
+        return prev.filter(id => id !== item.id);
+      } else {
+        return [...prev, item.id];
+      }
+    });
   };
 
   const handleSelectAll = (selected: boolean) => {
@@ -138,15 +147,15 @@ export default function OneDisk() {
   };
 
   const handleDeleteSelected = () => {
+    if (selectedItems.length === 0) return;
+    
     const currentFiles = isInTrash ? trashedFiles : files;
     const selectedFiles = currentFiles.filter(file => selectedItems.includes(file.id));
     
     if (isInTrash) {
-      // Excluir permanentemente
       setTrashedFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
       console.log("Itens excluídos permanentemente:", selectedItems);
     } else {
-      // Mover para lixeira
       setTrashedFiles(prev => [...prev, ...selectedFiles]);
       setFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
       console.log("Itens movidos para lixeira:", selectedItems);
@@ -156,7 +165,7 @@ export default function OneDisk() {
   };
 
   const handleRestoreSelected = () => {
-    if (!isInTrash) return;
+    if (!isInTrash || selectedItems.length === 0) return;
     
     const selectedFiles = trashedFiles.filter(file => selectedItems.includes(file.id));
     setFiles(prev => [...prev, ...selectedFiles]);
@@ -173,7 +182,6 @@ export default function OneDisk() {
 
   const handleZipSelected = () => {
     console.log("Criando ZIP dos itens:", selectedItems);
-    // Aqui seria implementada a lógica de criação do ZIP
   };
 
   const handleClearSelection = () => {
@@ -196,7 +204,13 @@ export default function OneDisk() {
     console.log("Voltando aos arquivos");
   };
 
+  const handleNavigate = (path: string) => {
+    console.log("Navigate to:", path);
+    setSelectedItems([]);
+  };
+
   const currentFiles = isInTrash ? trashedFiles : files;
+  const isTrashEmpty = isInTrash && trashedFiles.length === 0;
 
   return (
     <div className="h-full flex flex-col">
@@ -220,35 +234,50 @@ export default function OneDisk() {
           usedSpace={bucketInfo.usedSpace}
           totalSpace={bucketInfo.totalSpace}
           objectsCount={bucketInfo.objectsCount}
+          currentPath={isInTrash ? "/lixeira" : bucketInfo.currentPath}
           onTrashClick={handleTrashClick}
           onSharedClick={() => console.log("Show shared")}
           onFavoritesClick={() => console.log("Show favorites")}
+          onNavigate={handleNavigate}
         />
         
         <div className="flex-1 flex flex-col min-w-0">
-          <OneDiskFileArea
-            files={currentFiles}
-            viewMode={viewMode}
-            selectedItems={selectedItems}
-            editingFolderId={editingFolderId}
-            isInTrash={isInTrash}
-            onFileClick={handleFileClick}
-            onFavoriteToggle={handleFavoriteToggle}
-            onShareClick={handleShareClick}
-            onItemSelect={handleItemSelect}
-            onSelectAll={handleSelectAll}
-            onFolderRename={handleFolderRename}
-          />
+          {isTrashEmpty ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="text-6xl opacity-20">🗑️</div>
+                <h3 className="text-lg font-medium">Lixeira vazia</h3>
+                <p className="text-muted-foreground">
+                  Não há itens na lixeira no momento.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <OneDiskFileArea
+              files={currentFiles}
+              viewMode={viewMode}
+              selectedItems={selectedItems}
+              editingFolderId={editingFolderId}
+              isInTrash={isInTrash}
+              onFileClick={handleFileClick}
+              onFavoriteToggle={handleFavoriteToggle}
+              onShareClick={handleShareClick}
+              onItemSelect={handleItemSelect}
+              onSelectAll={handleSelectAll}
+              onFolderRename={handleFolderRename}
+            />
+          )}
           
           <OneDiskFooter
             currentPath={isInTrash ? "/lixeira" : bucketInfo.currentPath}
             bucketUuid={bucketInfo.uuid}
+            bucketName={bucketInfo.name}
             selectedItems={selectedItems}
             isInTrash={isInTrash}
             onPathClick={handlePathClick}
             onDeleteSelected={handleDeleteSelected}
             onRestoreSelected={handleRestoreSelected}
-            onEmptyTrash={handleEmptyTrash}
+            onEmptyTrash={trashedFiles.length > 0 ? handleEmptyTrash : undefined}
             onZipSelected={handleZipSelected}
             onClearSelection={handleClearSelection}
           />

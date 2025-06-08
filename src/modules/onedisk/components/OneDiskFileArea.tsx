@@ -5,6 +5,7 @@ import { Upload, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FileItem } from '../config';
 import { OneDiskFileItem } from './OneDiskFileItem';
+import { OneDiskFilePreview } from './OneDiskFilePreview';
 
 interface OneDiskFileAreaProps {
   files: FileItem[];
@@ -34,18 +35,27 @@ export function OneDiskFileArea({
   onFolderRename
 }: OneDiskFileAreaProps) {
   const [editingName, setEditingName] = useState('');
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleItemClick = (item: FileItem, event: React.MouseEvent) => {
+    console.log("Item clicked:", item.name);
     if (event.ctrlKey || event.metaKey) {
-      // Multi-select logic would go here
+      // Multi-select logic
+      onItemSelect(item);
     } else {
+      // Single select
       onItemSelect(item);
     }
   };
 
   const handleItemDoubleClick = (item: FileItem) => {
-    onFileClick(item);
+    console.log("Item double clicked:", item.name);
+    if (item.type === 'folder') {
+      onFileClick(item); // Navigate to folder
+    } else {
+      setPreviewFile(item); // Show preview for files
+    }
   };
 
   const handleRename = (item: FileItem) => {
@@ -62,7 +72,6 @@ export function OneDiskFileArea({
       // Se nome vazio, cancela a edição e remove a pasta se foi criada recentemente
       const folder = files.find(f => f.id === folderId);
       if (folder && folder.name === '') {
-        // Remove pasta vazia recém-criada
         onFolderRename(folderId, ''); // Isso irá remover a pasta
       }
     }
@@ -134,7 +143,7 @@ export function OneDiskFileArea({
   const renderGridView = () => (
     <div className="space-y-4">
       {!isInTrash && renderUploadArea()}
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {files.map((item) => (
           <OneDiskFileItem
             key={item.id}
@@ -158,7 +167,7 @@ export function OneDiskFileArea({
   );
 
   return (
-    <div className="flex-1 overflow-auto p-4">
+    <div className="flex-1 overflow-auto p-4 relative">
       <input
         type="file"
         ref={fileInputRef}
@@ -168,6 +177,18 @@ export function OneDiskFileArea({
       />
       
       {viewMode === 'list' ? renderListView() : renderGridView()}
+
+      {/* File Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <OneDiskFilePreview
+            file={previewFile}
+            onClose={() => setPreviewFile(null)}
+            onDownload={() => console.log('Download:', previewFile.name)}
+            onShare={() => console.log('Share:', previewFile.name)}
+          />
+        </div>
+      )}
     </div>
   );
 }

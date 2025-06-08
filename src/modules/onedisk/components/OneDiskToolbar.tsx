@@ -1,6 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { HardDrive, Home, ArrowLeft, ArrowRight, FolderPlus, Trash2, Share, Info, List, Grid3X3, RefreshCcw } from "lucide-react";
+import { HardDrive, Home, ArrowLeft, ArrowRight, FolderPlus, Trash2, Share, Info, List, Grid3X3, RefreshCcw, HelpCircle } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface OneDiskToolbarProps {
   bucketName: string;
@@ -101,6 +108,46 @@ export function OneDiskToolbar({
             <Grid3X3 size={16} />
           </Button>
         </div>
+
+        {/* Help menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" title="Ajuda e comandos">
+              <HelpCircle size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuItem>
+              <span className="font-medium">Comandos do OneDisk</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <span className="text-sm">Ctrl + N - Nova pasta</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm">Ctrl + U - Upload arquivo</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm">Del - Excluir selecionados</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm">F2 - Renomear arquivo/pasta</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm">Enter - Abrir/Navegar</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm">Espaço - Preview</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <span className="text-sm text-muted-foreground">Clique: Selecionar</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="text-sm text-muted-foreground">Duplo clique: Abrir/Navegar</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
