@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import OneDisk from "./modules/onedisk/pages/OneDisk";
 import Kanban from "./modules/kanban/pages/Kanban";
 import Oneboard from "./modules/oneboard/pages/Oneboard";
+import OneboardWorkspaces from "./modules/oneboard/pages/OneboardWorkspaces";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,7 @@ const App = () => (
             <Route path="agenda" element={<div className="p-6">Página de Agenda em desenvolvimento</div>} />
             <Route path="vendas" element={<div className="p-6">Página de Vendas em desenvolvimento</div>} />
             <Route path="onedisk" element={<OneDisk />} />
+            <Route path="oneboard" element={<OneboardWorkspaces />} />
             <Route path="oneboard/:workspaceId/:boardId" element={<Oneboard />} />
           </Route>
           

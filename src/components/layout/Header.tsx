@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -6,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Settings, LogOut, User, Folder, HardDrive, Maximize, Sun, Moon } from "lucide-react";
+import { Menu, Settings, LogOut, User, Folder, HardDrive, Maximize, Sun, Moon, TrendingUp, DollarSign, Calendar, LayoutDashboard, Megaphone } from "lucide-react";
 import { NotificationDropdown } from "./NotificationDropdown";
 import { useState } from "react";
 
@@ -32,6 +33,18 @@ export function Header({ onMenuClick }: HeaderProps) {
       setIsFullscreen(false);
     }
   };
+
+  const appModules = [
+    { name: "CRM", icon: User, enabled: true },
+    { name: "Financeiro", icon: DollarSign, enabled: true },
+    { name: "Vendas", icon: TrendingUp, enabled: true },
+    { name: "OneDisk", icon: HardDrive, enabled: true },
+    { name: "Oneboard", icon: LayoutDashboard, enabled: true },
+    { name: "Agendamentos", icon: Calendar, enabled: true },
+    { name: "Projetos", icon: Folder, enabled: false },
+    { name: "Marketing", icon: Megaphone, enabled: false },
+    { name: "Relatórios", icon: Folder, enabled: false },
+  ];
 
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -75,26 +88,25 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem>
-                <Folder className="mr-2 h-4 w-4" />
-                CRM
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Folder className="mr-2 h-4 w-4" />
-                Financeiro
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Folder className="mr-2 h-4 w-4" />
-                Vendas
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HardDrive className="mr-2 h-4 w-4" />
-                OneDisk
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Folder className="mr-2 h-4 w-4" />
-                Kanban
-              </DropdownMenuItem>
+              <div className="grid grid-cols-3 gap-1 p-2">
+                {appModules.map((module) => {
+                  const IconComponent = module.icon;
+                  return (
+                    <Button
+                      key={module.name}
+                      variant="ghost"
+                      size="sm"
+                      className={`h-12 w-12 p-0 flex flex-col items-center justify-center ${
+                        !module.enabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      disabled={!module.enabled}
+                      title={module.name}
+                    >
+                      <IconComponent className="h-5 w-5" />
+                    </Button>
+                  );
+                })}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
