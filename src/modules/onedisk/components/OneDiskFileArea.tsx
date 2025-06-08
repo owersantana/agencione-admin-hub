@@ -1,337 +1,454 @@
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Folder, FileText, Image, Film, Music, Archive, Heart, Share } from "lucide-react";
-import { FileItem } from "../config";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { 
+  Folder, 
+  File, 
+  Image, 
+  FileText, 
+  Archive, 
+  Music, 
+  Video,
+  Download,
+  MoreHorizontal,
+  Edit2,
+  Trash2,
+  Share,
+  Info,
+  Upload,
+  Plus
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
-interface OneDiskFileAreaProps {
-  files: FileItem[];
-  viewMode: 'list' | 'grid';
-  selectedItems: string[];
-  editingFolderId?: string | null;
-  isInTrash?: boolean;
-  onFileClick: (file: FileItem) => void;
-  onFavoriteToggle: (fileId: string) => void;
-  onShareClick: (fileId: string) => void;
-  onItemSelect: (fileId: string, selected: boolean) => void;
-  onSelectAll: (selected: boolean) => void;
-  onFolderRename?: (folderId: string, newName: string) => void;
+interface FileItem {
+  id: string;
+  name: string;
+  type: 'folder' | 'file';
+  size?: number;
+  modified: Date;
+  fileType?: string;
+  thumbnail?: string;
 }
 
+interface OneDiskFileAreaProps {
+  currentPath: string;
+  viewMode: 'list' | 'grid';
+  isInTrash?: boolean;
+  onNavigate: (path: string) => void;
+  onItemSelect: (item: FileItem) => void;
+  onItemDoubleClick: (item: FileItem) => void;
+  onUpload: (files: FileList) => void;
+}
+
+// Mock data
+const mockFiles: FileItem[] = [
+  {
+    id: '1',
+    name: 'Documentos',
+    type: 'folder',
+    modified: new Date('2024-01-15'),
+  },
+  {
+    id: '2',
+    name: 'Imagens',
+    type: 'folder',
+    modified: new Date('2024-01-10'),
+  },
+  {
+    id: '3',
+    name: 'projeto.pdf',
+    type: 'file',
+    size: 2048000,
+    modified: new Date('2024-01-12'),
+    fileType: 'pdf',
+  },
+  {
+    id: '4',
+    name: 'apresentacao.pptx',
+    type: 'file',
+    size: 5120000,
+    modified: new Date('2024-01-08'),
+    fileType: 'presentation',
+  },
+  {
+    id: '5',
+    name: 'planilha.xlsx',
+    type: 'file',
+    size: 1024000,
+    modified: new Date('2024-01-05'),
+    fileType: 'spreadsheet',
+  },
+  {
+    id: '6',
+    name: 'video_tutorial.mp4',
+    type: 'file',
+    size: 15728640,
+    modified: new Date('2024-01-03'),
+    fileType: 'video',
+  },
+];
+
 export function OneDiskFileArea({
-  files,
+  currentPath,
   viewMode,
-  selectedItems,
-  editingFolderId,
   isInTrash = false,
-  onFileClick,
-  onFavoriteToggle,
-  onShareClick,
+  onNavigate,
   onItemSelect,
-  onSelectAll,
-  onFolderRename
+  onItemDoubleClick,
+  onUpload
 }: OneDiskFileAreaProps) {
-  const [editingName, setEditingName] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (editingFolderId && inputRef.current) {
-      const fileBeingEdited = files.find(file => file.id === editingFolderId);
-      if (fileBeingEdited) {
-        setEditingName(fileBeingEdited.name);
-      }
-      inputRef.current.focus();
+  const getFileIcon = (item: FileItem) => {
+    if (item.type === 'folder') return Folder;
+    
+    switch (item.fileType) {
+      case 'pdf':
+      case 'doc':
+      case 'docx':
+        return FileText;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return Image;
+      case 'zip':
+      case 'rar':
+        return Archive;
+      case 'mp3':
+      case 'wav':
+        return Music;
+      case 'mp4':
+      case 'avi':
+        return Video;
+      default:
+        return File;
     }
-  }, [editingFolderId, files]);
-
-  const getFileIcon = (file: FileItem) => {
-    if (file.type === 'folder') return <Folder size={20} className="text-blue-500" />;
-    
-    const mimeType = file.mimeType || '';
-    if (mimeType.startsWith('image/')) return <Image size={20} className="text-green-500" />;
-    if (mimeType.startsWith('video/')) return <Film size={20} className="text-purple-500" />;
-    if (mimeType.startsWith('audio/')) return <Music size={20} className="text-orange-500" />;
-    if (mimeType.includes('zip') || mimeType.includes('rar')) return <Archive size={20} className="text-gray-500" />;
-    
-    return <FileText size={20} className="text-gray-500" />;
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '-';
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
+    return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+      minute: '2-digit',
+    });
   };
 
-  const allSelected = files.length > 0 && files.every(file => selectedItems.includes(file.id));
-
-  const handleNameSubmit = (fileId: string) => {
-    if (onFolderRename) {
-      onFolderRename(fileId, editingName);
+  const handleItemClick = (item: FileItem, event: React.MouseEvent) => {
+    if (event.ctrlKey || event.metaKey) {
+      setSelectedItems(prev => 
+        prev.includes(item.id) 
+          ? prev.filter(id => id !== item.id)
+          : [...prev, item.id]
+      );
+    } else {
+      setSelectedItems([item.id]);
     }
-    setEditingName("");
+    onItemSelect(item);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent, fileId: string) => {
-    if (e.key === 'Enter') {
-      handleNameSubmit(fileId);
-    } else if (e.key === 'Escape') {
-      if (onFolderRename) {
-        onFolderRename(fileId, "");
-      }
-      setEditingName("");
+  const handleItemDoubleClick = (item: FileItem) => {
+    if (item.type === 'folder') {
+      onNavigate(`${currentPath}/${item.name}`);
+    } else {
+      onItemDoubleClick(item);
     }
   };
 
-  if (files.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg mb-2">
-            {isInTrash ? "Lixeira vazia" : "Nenhum arquivo encontrado"}
+  const handleRename = (item: FileItem) => {
+    setEditingItem(item.id);
+    setEditingName(item.name);
+  };
+
+  const handleRenameSubmit = () => {
+    // Implementar lógica de renomear
+    console.log('Renomeando para:', editingName);
+    setEditingItem(null);
+    setEditingName('');
+  };
+
+  const handleRenameCancel = () => {
+    setEditingItem(null);
+    setEditingName('');
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      onUpload(files);
+    }
+  };
+
+  const renderListView = () => (
+    <div className="space-y-1">
+      {/* Upload area */}
+      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 mb-4 hover:border-muted-foreground/50 transition-colors">
+        <div className="text-center">
+          <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground mb-2">
+            Arraste arquivos aqui ou clique para selecionar
           </p>
-          <p className="text-sm">
-            {isInTrash 
-              ? "Itens excluídos aparecerão aqui" 
-              : "Adicione arquivos ou crie uma nova pasta para começar"
-            }
-          </p>
+          <Button variant="outline" onClick={handleFileUpload}>
+            <Plus className="h-4 w-4 mr-2" />
+            Selecionar arquivos
+          </Button>
         </div>
       </div>
-    );
-  }
 
-  if (viewMode === 'grid') {
-    return (
-      <div className="flex-1 overflow-auto p-2 sm:p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-4">
-          {files.map((file) => (
+      {/* File list */}
+      <div className="space-y-1">
+        {mockFiles.map((item) => {
+          const Icon = getFileIcon(item);
+          const isSelected = selectedItems.includes(item.id);
+          const isEditing = editingItem === item.id;
+
+          return (
             <div
-              key={file.id}
-              className={`p-2 sm:p-4 border rounded-lg cursor-pointer hover:bg-accent transition-colors ${
-                selectedItems.includes(file.id) ? 'bg-accent border-primary' : ''
-              }`}
-              onClick={() => !editingFolderId && onFileClick(file)}
+              key={item.id}
+              className={cn(
+                "flex items-center space-x-3 p-2 rounded-lg hover:bg-accent cursor-pointer border",
+                isSelected && "bg-accent border-primary"
+              )}
+              onClick={(e) => handleItemClick(item, e)}
+              onDoubleClick={() => handleItemDoubleClick(item)}
             >
-              <div className="flex flex-col items-center space-y-2">
-                <div className="flex items-center justify-between w-full">
-                  <Checkbox
-                    checked={selectedItems.includes(file.id)}
-                    onCheckedChange={(checked) => onItemSelect(file.id, !!checked)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onFavoriteToggle(file.id);
-                      }}
-                      className={`${file.favorite ? "text-red-500" : "text-muted-foreground"} h-6 w-6 p-0`}
-                    >
-                      <Heart size={12} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onShareClick(file.id);
-                      }}
-                      className={`${file.shared ? "text-blue-500" : "text-muted-foreground"} h-6 w-6 p-0`}
-                    >
-                      <Share size={12} />
-                    </Button>
-                  </div>
-                </div>
-                <div className="text-center w-full">
-                  {getFileIcon(file)}
-                  {editingFolderId === file.id ? (
-                    <Input
-                      ref={inputRef}
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onBlur={() => handleNameSubmit(file.id)}
-                      onKeyDown={(e) => handleKeyPress(e, file.id)}
-                      className="mt-2 h-8 text-xs"
-                      placeholder="Nome da pasta"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <p className="text-xs sm:text-sm font-medium mt-2 truncate w-full">{file.name}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 overflow-auto">
-      <div className="hidden sm:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={onSelectAll}
-                />
-              </TableHead>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>Nome</TableHead>
-              <TableHead className="w-32">Tamanho</TableHead>
-              <TableHead className="w-48">Modificado</TableHead>
-              <TableHead className="w-24">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file) => (
-              <TableRow 
-                key={file.id} 
-                className={`cursor-pointer hover:bg-accent ${
-                  selectedItems.includes(file.id) ? 'bg-accent' : ''
-                }`}
-                onClick={() => !editingFolderId && onFileClick(file)}
-              >
-                <TableCell>
-                  <Checkbox
-                    checked={selectedItems.includes(file.id)}
-                    onCheckedChange={(checked) => onItemSelect(file.id, !!checked)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </TableCell>
-                <TableCell>
-                  {getFileIcon(file)}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {editingFolderId === file.id ? (
-                    <Input
-                      ref={inputRef}
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      onBlur={() => handleNameSubmit(file.id)}
-                      onKeyDown={(e) => handleKeyPress(e, file.id)}
-                      className="h-8"
-                      placeholder="Nome da pasta"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    file.name
-                  )}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatFileSize(file.size)}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(file.modifiedAt)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onFavoriteToggle(file.id)}
-                      className={file.favorite ? "text-red-500" : "text-muted-foreground"}
-                    >
-                      <Heart size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onShareClick(file.id)}
-                      className={file.shared ? "text-blue-500" : "text-muted-foreground"}
-                    >
-                      <Share size={14} />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile view - Card layout */}
-      <div className="sm:hidden p-4 space-y-3">
-        {files.map((file) => (
-          <div
-            key={file.id}
-            className={`p-3 border rounded-lg ${
-              selectedItems.includes(file.id) ? 'bg-accent border-primary' : ''
-            }`}
-            onClick={() => !editingFolderId && onFileClick(file)}
-          >
-            <div className="flex items-start space-x-3">
               <Checkbox
-                checked={selectedItems.includes(file.id)}
-                onCheckedChange={(checked) => onItemSelect(file.id, !!checked)}
-                onClick={(e) => e.stopPropagation()}
-                className="mt-1"
+                checked={isSelected}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setSelectedItems(prev => [...prev, item.id]);
+                  } else {
+                    setSelectedItems(prev => prev.filter(id => id !== item.id));
+                  }
+                }}
               />
-              <div className="flex-shrink-0 mt-1">
-                {getFileIcon(file)}
-              </div>
+              
+              <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              
               <div className="flex-1 min-w-0">
-                {editingFolderId === file.id ? (
+                {isEditing ? (
                   <Input
-                    ref={inputRef}
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    onBlur={() => handleNameSubmit(file.id)}
-                    onKeyDown={(e) => handleKeyPress(e, file.id)}
-                    className="h-8 mb-2"
-                    placeholder="Nome da pasta"
-                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRenameSubmit();
+                      if (e.key === 'Escape') handleRenameCancel();
+                    }}
+                    onBlur={handleRenameSubmit}
+                    className="h-7 text-sm"
+                    autoFocus
                   />
                 ) : (
-                  <p className="font-medium truncate">{file.name}</p>
+                  <span className="text-sm font-medium truncate">
+                    {item.name}
+                  </span>
                 )}
-                <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                  <span>{formatFileSize(file.size)}</span>
-                  <span>{formatDate(file.modifiedAt)}</span>
-                </div>
               </div>
-              <div className="flex space-x-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onFavoriteToggle(file.id)}
-                  className={`${file.favorite ? "text-red-500" : "text-muted-foreground"} h-8 w-8 p-0`}
-                >
-                  <Heart size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onShareClick(file.id)}
-                  className={`${file.shared ? "text-blue-500" : "text-muted-foreground"} h-8 w-8 p-0`}
-                >
-                  <Share size={14} />
-                </Button>
+              
+              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                {item.size && (
+                  <span className="w-16 text-right">
+                    {formatFileSize(item.size)}
+                  </span>
+                )}
+                <span className="w-32 text-right">
+                  {formatDate(item.modified)}
+                </span>
               </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleRename(item)}>
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Renomear
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Share className="h-4 w-4 mr-2" />
+                    Compartilhar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Info className="h-4 w-4 mr-2" />
+                    Informações
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+    </div>
+  );
+
+  const renderGridView = () => (
+    <div className="space-y-4">
+      {/* Upload area */}
+      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors">
+        <div className="text-center">
+          <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground mb-2">
+            Arraste arquivos aqui ou clique para selecionar
+          </p>
+          <Button variant="outline" onClick={handleFileUpload}>
+            <Plus className="h-4 w-4 mr-2" />
+            Selecionar arquivos
+          </Button>
+        </div>
+      </div>
+
+      {/* File grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+        {mockFiles.map((item) => {
+          const Icon = getFileIcon(item);
+          const isSelected = selectedItems.includes(item.id);
+          const isEditing = editingItem === item.id;
+
+          return (
+            <Card
+              key={item.id}
+              className={cn(
+                "cursor-pointer hover:shadow-md transition-all",
+                isSelected && "ring-2 ring-primary"
+              )}
+              onClick={(e) => handleItemClick(item, e)}
+              onDoubleClick={() => handleItemDoubleClick(item)}
+            >
+              <CardContent className="p-3">
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="relative">
+                    <Icon className="h-12 w-12 text-muted-foreground" />
+                    <Checkbox
+                      className="absolute -top-1 -right-1 h-4 w-4"
+                      checked={isSelected}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedItems(prev => [...prev, item.id]);
+                        } else {
+                          setSelectedItems(prev => prev.filter(id => id !== item.id));
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="w-full text-center">
+                    {isEditing ? (
+                      <Input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameSubmit();
+                          if (e.key === 'Escape') handleRenameCancel();
+                        }}
+                        onBlur={handleRenameSubmit}
+                        className="h-7 text-xs text-center"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="text-xs font-medium text-center block truncate px-1">
+                        {item.name}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {item.size && (
+                    <Badge variant="secondary" className="text-xs">
+                      {formatFileSize(item.size)}
+                    </Badge>
+                  )}
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-1 right-1 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                    >
+                      <MoreHorizontal className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleRename(item)}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Renomear
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Share className="h-4 w-4 mr-2" />
+                      Compartilhar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Info className="h-4 w-4 mr-2" />
+                      Informações
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex-1 overflow-auto p-4">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        multiple
+        className="hidden"
+      />
+      
+      {viewMode === 'list' ? renderListView() : renderGridView()}
     </div>
   );
 }
