@@ -39,9 +39,13 @@ export function OneDiskFileArea({
 
   useEffect(() => {
     if (editingFolderId && inputRef.current) {
+      const fileBeingEdited = files.find(file => file.id === editingFolderId);
+      if (fileBeingEdited) {
+        setEditingName(fileBeingEdited.name);
+      }
       inputRef.current.focus();
     }
-  }, [editingFolderId]);
+  }, [editingFolderId, files]);
 
   const getFileIcon = (file: FileItem) => {
     if (file.type === 'folder') return <Folder size={20} className="text-blue-500" />;
@@ -73,7 +77,6 @@ export function OneDiskFileArea({
   };
 
   const allSelected = files.length > 0 && files.every(file => selectedItems.includes(file.id));
-  const someSelected = selectedItems.length > 0 && !allSelected;
 
   const handleNameSubmit = (fileId: string) => {
     if (onFolderRename) {
@@ -190,7 +193,6 @@ export function OneDiskFileArea({
               <TableHead className="w-12">
                 <Checkbox
                   checked={allSelected}
-                  indeterminate={someSelected}
                   onCheckedChange={onSelectAll}
                 />
               </TableHead>
