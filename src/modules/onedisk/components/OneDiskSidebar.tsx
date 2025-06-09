@@ -1,10 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trash2, Share, Heart, FolderTree, X } from "lucide-react";
+import { Trash2, Share, Heart, FolderTree } from "lucide-react";
 import { OneDiskFileTreeSidebar } from "./OneDiskFileTreeSidebar";
-import { OneDiskSharedFiles } from "./OneDiskSharedFiles";
-import { OneDiskFavoriteFiles } from "./OneDiskFavoriteFiles";
 import { useState } from "react";
 
 interface OneDiskSidebarProps {
@@ -34,12 +32,12 @@ export function OneDiskSidebar({
   const totalGB = (totalSpace / (1024 * 1024 * 1024)).toFixed(0);
 
   const handleSharedClick = () => {
-    setActiveView('shared');
+    setActiveView('tree');
     onSharedClick();
   };
 
   const handleFavoritesClick = () => {
-    setActiveView('favorites');
+    setActiveView('tree');
     onFavoritesClick();
   };
 
@@ -52,7 +50,7 @@ export function OneDiskSidebar({
       {/* Navigation */}
       <div className="p-4 space-y-2">
         <Button
-          variant={activeView === 'tree' ? 'default' : 'ghost'}
+          variant="ghost"
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={handleTreeClick}
         >
@@ -69,7 +67,7 @@ export function OneDiskSidebar({
           Lixeira
         </Button>
         <Button
-          variant={activeView === 'shared' ? 'default' : 'ghost'}
+          variant="ghost"
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={handleSharedClick}
         >
@@ -77,7 +75,7 @@ export function OneDiskSidebar({
           Compartilhados
         </Button>
         <Button
-          variant={activeView === 'favorites' ? 'default' : 'ghost'}
+          variant="ghost"
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={handleFavoritesClick}
         >
@@ -86,20 +84,12 @@ export function OneDiskSidebar({
         </Button>
       </div>
 
-      {/* Content Area */}
+      {/* Content Area - Only File Tree */}
       <div className="flex-1 overflow-y-auto border-t border-sidebar-border">
-        {activeView === 'tree' && (
-          <OneDiskFileTreeSidebar 
-            onNavigate={onNavigate}
-            currentPath={currentPath}
-          />
-        )}
-        {activeView === 'shared' && (
-          <OneDiskSharedFiles />
-        )}
-        {activeView === 'favorites' && (
-          <OneDiskFavoriteFiles />
-        )}
+        <OneDiskFileTreeSidebar 
+          onNavigate={onNavigate}
+          currentPath={currentPath}
+        />
       </div>
 
       {/* Storage info - Fixed at bottom */}
