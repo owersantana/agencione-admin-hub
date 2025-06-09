@@ -1,25 +1,33 @@
 
 import { Button } from "@/components/ui/button";
-import { Trash2, Archive, X, RotateCcw, Trash } from "lucide-react";
+import { Trash2, Archive, X, RotateCcw, Trash, Share, Heart } from "lucide-react";
 
 interface OneDiskActionBarProps {
   selectedCount: number;
   isInTrash?: boolean;
+  isInShared?: boolean;
+  isInFavorites?: boolean;
   onDelete: () => void;
   onRestore?: () => void;
   onEmptyTrash?: () => void;
   onZip: () => void;
   onClearSelection: () => void;
+  onRemoveSharing?: () => void;
+  onRemoveFavorites?: () => void;
 }
 
 export function OneDiskActionBar({
   selectedCount,
   isInTrash = false,
+  isInShared = false,
+  isInFavorites = false,
   onDelete,
   onRestore,
   onEmptyTrash,
   onZip,
-  onClearSelection
+  onClearSelection,
+  onRemoveSharing,
+  onRemoveFavorites
 }: OneDiskActionBarProps) {
   if (selectedCount === 0 && !isInTrash) return null;
 
@@ -71,6 +79,30 @@ export function OneDiskActionBar({
                 </Button>
               )}
             </>
+          ) : isInShared ? (
+            selectedCount > 0 && onRemoveSharing && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onRemoveSharing}
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs sm:text-sm px-2 sm:px-3"
+              >
+                <Share size={14} className="mr-1" />
+                <span className="hidden sm:inline">Remover compartilhamento</span>
+              </Button>
+            )
+          ) : isInFavorites ? (
+            selectedCount > 0 && onRemoveFavorites && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onRemoveFavorites}
+                className="bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm px-2 sm:px-3"
+              >
+                <Heart size={14} className="mr-1" />
+                <span className="hidden sm:inline">Remover dos favoritos</span>
+              </Button>
+            )
           ) : (
             selectedCount > 0 && (
               <>
