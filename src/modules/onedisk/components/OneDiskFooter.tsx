@@ -8,12 +8,16 @@ interface OneDiskFooterProps {
   bucketName: string;
   selectedItems: string[];
   isInTrash?: boolean;
+  isInShared?: boolean;
+  isInFavorites?: boolean;
   onPathClick: (path: string) => void;
   onDeleteSelected: () => void;
   onRestoreSelected?: () => void;
   onEmptyTrash?: () => void;
   onZipSelected: () => void;
   onClearSelection: () => void;
+  onRemoveSharing?: () => void;
+  onRemoveFavorites?: () => void;
 }
 
 export function OneDiskFooter({
@@ -22,12 +26,16 @@ export function OneDiskFooter({
   bucketName,
   selectedItems,
   isInTrash = false,
+  isInShared = false,
+  isInFavorites = false,
   onPathClick,
   onDeleteSelected,
   onRestoreSelected,
   onEmptyTrash,
   onZipSelected,
-  onClearSelection
+  onClearSelection,
+  onRemoveSharing,
+  onRemoveFavorites
 }: OneDiskFooterProps) {
   const pathSegments = currentPath.split('/').filter(segment => segment !== '');
   
@@ -36,11 +44,15 @@ export function OneDiskFooter({
       <OneDiskActionBar
         selectedCount={selectedItems.length}
         isInTrash={isInTrash}
+        isInShared={isInShared}
+        isInFavorites={isInFavorites}
         onDelete={onDeleteSelected}
         onRestore={onRestoreSelected}
         onEmptyTrash={onEmptyTrash}
         onZip={onZipSelected}
         onClearSelection={onClearSelection}
+        onRemoveSharing={onRemoveSharing}
+        onRemoveFavorites={onRemoveFavorites}
       />
       
       <div className="flex items-center justify-between p-2 sm:p-4 bg-background">
@@ -57,6 +69,16 @@ export function OneDiskFooter({
             <>
               <ChevronRight size={14} className="flex-shrink-0" />
               <span className="text-foreground">Lixeira</span>
+            </>
+          ) : isInShared ? (
+            <>
+              <ChevronRight size={14} className="flex-shrink-0" />
+              <span className="text-foreground">Compartilhados</span>
+            </>
+          ) : isInFavorites ? (
+            <>
+              <ChevronRight size={14} className="flex-shrink-0" />
+              <span className="text-foreground">Favoritos</span>
             </>
           ) : (
             pathSegments.map((segment, index) => {

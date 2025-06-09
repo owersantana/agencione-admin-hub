@@ -220,6 +220,26 @@ export default function OneDisk() {
     setSelectedItems([]);
   };
 
+  const handleRemoveSharing = () => {
+    if (currentView !== 'shared' || selectedItems.length === 0) return;
+    
+    setFiles(prev => prev.map(file => 
+      selectedItems.includes(file.id) ? { ...file, shared: false } : file
+    ));
+    setSelectedItems([]);
+    console.log("Compartilhamento removido:", selectedItems);
+  };
+
+  const handleRemoveFavorites = () => {
+    if (currentView !== 'favorites' || selectedItems.length === 0) return;
+    
+    setFiles(prev => prev.map(file => 
+      selectedItems.includes(file.id) ? { ...file, favorite: false } : file
+    ));
+    setSelectedItems([]);
+    console.log("Removido dos favoritos:", selectedItems);
+  };
+
   const getCurrentFiles = () => {
     switch (currentView) {
       case 'trash':
@@ -305,6 +325,8 @@ export default function OneDisk() {
         bucketName={getViewTitle()}
         viewMode={viewMode}
         isInTrash={currentView === 'trash'}
+        isInShared={currentView === 'shared'}
+        isInFavorites={currentView === 'favorites'}
         onNavigateHome={handleBackToFiles}
         onNavigateBack={() => console.log("Navigate back")}
         onNavigateForward={() => console.log("Navigate forward")}
@@ -340,6 +362,8 @@ export default function OneDisk() {
               selectedItems={selectedItems}
               editingFolderId={editingFolderId}
               isInTrash={currentView === 'trash'}
+              isInShared={currentView === 'shared'}
+              isInFavorites={currentView === 'favorites'}
               onFileClick={handleFileClick}
               onFavoriteToggle={handleFavoriteToggle}
               onShareClick={handleShareClick}
@@ -355,12 +379,16 @@ export default function OneDisk() {
             bucketName={bucketInfo.name}
             selectedItems={selectedItems}
             isInTrash={currentView === 'trash'}
+            isInShared={currentView === 'shared'}
+            isInFavorites={currentView === 'favorites'}
             onPathClick={handlePathClick}
             onDeleteSelected={handleDeleteSelected}
             onRestoreSelected={handleRestoreSelected}
             onEmptyTrash={trashedFiles.length > 0 ? handleEmptyTrash : undefined}
             onZipSelected={handleZipSelected}
             onClearSelection={handleClearSelection}
+            onRemoveSharing={handleRemoveSharing}
+            onRemoveFavorites={handleRemoveFavorites}
           />
         </div>
       </div>

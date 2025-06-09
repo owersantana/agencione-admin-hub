@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Plus } from 'lucide-react';
@@ -13,6 +12,8 @@ interface OneDiskFileAreaProps {
   selectedItems: string[];
   editingFolderId: string | null;
   isInTrash?: boolean;
+  isInShared?: boolean;
+  isInFavorites?: boolean;
   onFileClick: (file: FileItem) => void;
   onFavoriteToggle: (fileId: string) => void;
   onShareClick: (fileId: string) => void;
@@ -27,6 +28,8 @@ export function OneDiskFileArea({
   selectedItems,
   editingFolderId,
   isInTrash = false,
+  isInShared = false,
+  isInFavorites = false,
   onFileClick,
   onFavoriteToggle,
   onShareClick,
@@ -37,6 +40,8 @@ export function OneDiskFileArea({
   const [editingName, setEditingName] = useState('');
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showUploadArea = !isInTrash && !isInShared && !isInFavorites;
 
   const handleItemClick = (item: FileItem, event: React.MouseEvent) => {
     console.log("Item clicked:", item.name);
@@ -116,7 +121,7 @@ export function OneDiskFileArea({
 
   const renderListView = () => (
     <div className="space-y-1">
-      {!isInTrash && renderUploadArea()}
+      {showUploadArea && renderUploadArea()}
       <div className="space-y-1">
         {files.map((item) => (
           <OneDiskFileItem
@@ -142,7 +147,7 @@ export function OneDiskFileArea({
 
   const renderGridView = () => (
     <div className="space-y-4">
-      {!isInTrash && renderUploadArea()}
+      {showUploadArea && renderUploadArea()}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {files.map((item) => (
           <OneDiskFileItem

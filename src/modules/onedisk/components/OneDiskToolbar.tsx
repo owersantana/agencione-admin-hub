@@ -13,6 +13,8 @@ interface OneDiskToolbarProps {
   bucketName: string;
   viewMode: 'list' | 'grid';
   isInTrash?: boolean;
+  isInShared?: boolean;
+  isInFavorites?: boolean;
   onNavigateHome: () => void;
   onNavigateBack: () => void;
   onNavigateForward: () => void;
@@ -28,6 +30,8 @@ export function OneDiskToolbar({
   bucketName,
   viewMode,
   isInTrash = false,
+  isInShared = false,
+  isInFavorites = false,
   onNavigateHome,
   onNavigateBack,
   onNavigateForward,
@@ -38,6 +42,8 @@ export function OneDiskToolbar({
   onInfo,
   onViewModeChange
 }: OneDiskToolbarProps) {
+  const isSpecialView = isInTrash || isInShared || isInFavorites;
+  
   return (
     <div className="flex items-center justify-between p-2 sm:p-4 border-b border-border bg-background">
       {/* Left side - Bucket info */}
@@ -50,7 +56,7 @@ export function OneDiskToolbar({
       <div className="flex items-center space-x-1">
         {/* Navigation controls */}
         <div className="hidden sm:flex items-center space-x-1">
-          <Button variant="ghost" size="sm" onClick={onNavigateHome} title={isInTrash ? "Voltar aos arquivos" : "Home"}>
+          <Button variant="ghost" size="sm" onClick={onNavigateHome} title={isSpecialView ? "Voltar aos arquivos" : "Home"}>
             <Home size={16} />
           </Button>
           <Button variant="ghost" size="sm" onClick={onNavigateBack} title="Voltar">
@@ -68,8 +74,8 @@ export function OneDiskToolbar({
         
         <div className="w-px h-6 bg-border mx-1 sm:mx-2 hidden sm:block" />
         
-        {/* File operations - hidden in trash */}
-        {!isInTrash && (
+        {/* File operations - hidden in special views */}
+        {!isSpecialView && (
           <>
             <Button variant="ghost" size="sm" onClick={onCreateFolder} title="Nova pasta">
               <FolderPlus size={16} />
