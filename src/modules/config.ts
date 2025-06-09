@@ -51,14 +51,6 @@ export const AVAILABLE_MODULES: ModuleConfig[] = [
     routes: ["/dashboard/onedisk"]
   },
   {
-    id: "oneboard",
-    name: "Oneboard",
-    description: "Sistema de quadros colaborativos organizados por workspaces",
-    enabled: true,
-    icon: "layout-dashboard",
-    routes: ["/dashboard/oneboard"]
-  },
-  {
     id: "marketing",
     name: "Marketing",
     description: "Campanhas e automação de marketing",
