@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { OneDiskSidebar } from '../components/OneDiskSidebar';
 import { OneDiskToolbar } from '../components/OneDiskToolbar';
@@ -461,7 +462,8 @@ export default function OneDisk() {
 
       {shareModalItem && (
         <OneDiskShareModal
-          item={shareModalItem}
+          fileName={shareModalItem.name}
+          shareLink={`https://example.com/share/${shareModalItem.id}`}
           isOpen={!!shareModalItem}
           onClose={() => setShareModalItem(null)}
         />
