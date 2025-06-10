@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Plus } from 'lucide-react';
@@ -21,6 +22,7 @@ interface OneDiskFileAreaProps {
   onSelectAll: (selected: boolean) => void;
   onFolderRename: (folderId: string, newName: string) => void;
   onNavigateToFolder?: (item: FileItem) => void;
+  onUploadFiles: (files: FileList) => void;
 }
 
 export function OneDiskFileArea({
@@ -37,10 +39,12 @@ export function OneDiskFileArea({
   onItemSelect,
   onSelectAll,
   onFolderRename,
-  onNavigateToFolder
+  onNavigateToFolder,
+  onUploadFiles
 }: OneDiskFileAreaProps) {
   const [editingName, setEditingName] = useState('');
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showUploadArea = !isInTrash && !isInShared && !isInFavorites;
@@ -94,13 +98,46 @@ export function OneDiskFileArea({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      console.log('Files selected for upload:', files);
+    if (files && files.length > 0) {
+      onUploadFiles(files);
+      // Reset input
+      event.target.value = '';
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      onUploadFiles(files);
     }
   };
 
   const renderUploadArea = () => (
-    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 mb-4 hover:border-muted-foreground/50 transition-colors">
+    <div 
+      className={cn(
+        "border-2 border-dashed rounded-lg p-6 mb-4 transition-colors cursor-pointer",
+        isDragOver 
+          ? "border-primary bg-primary/5" 
+          : "border-muted-foreground/25 hover:border-muted-foreground/50"
+      )}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={handleFileUpload}
+    >
       <div className="text-center">
         <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
         <p className="text-sm text-muted-foreground mb-2">

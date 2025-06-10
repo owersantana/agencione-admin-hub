@@ -32,7 +32,7 @@ export default function OneDisk() {
   });
 
   // Mock data organizado por diretórios
-  const allFiles: { [path: string]: FileItem[] } = {
+  const [allFiles, setAllFiles] = useState<{ [path: string]: FileItem[] }>({
     '/': [
       {
         id: "1",
@@ -170,7 +170,7 @@ export default function OneDisk() {
         mimeType: "video/mp4"
       }
     ]
-  };
+  });
 
   const [trashedFiles, setTrashedFiles] = useState<FileItem[]>([]);
 
@@ -193,20 +193,18 @@ export default function OneDisk() {
   };
 
   const handleFavoriteToggle = (fileId: string) => {
-    const currentFiles = getCurrentFiles();
-    const targetFile = currentFiles.find(f => f.id === fileId);
-    
-    if (targetFile) {
-      // Atualizar no allFiles
-      const filesInPath = allFiles[currentPath] || [];
-      const updatedFiles = filesInPath.map(file => 
-        file.id === fileId ? { ...file, favorite: !file.favorite } : file
-      );
-      allFiles[currentPath] = updatedFiles;
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
       
-      // Forçar re-render
-      setSelectedItems([...selectedItems]);
-    }
+      // Encontrar e atualizar o arquivo em qualquer diretório
+      Object.keys(newFiles).forEach(path => {
+        newFiles[path] = newFiles[path].map(file => 
+          file.id === fileId ? { ...file, favorite: !file.favorite } : file
+        );
+      });
+      
+      return newFiles;
+    });
   };
 
   const handleShareClick = (fileId: string) => {
@@ -223,14 +221,15 @@ export default function OneDisk() {
       });
       
       // Marcar como compartilhado
-      const filesInPath = allFiles[currentPath] || [];
-      const updatedFiles = filesInPath.map(f => 
-        f.id === fileId ? { ...f, shared: true } : f
-      );
-      allFiles[currentPath] = updatedFiles;
-      
-      // Forçar re-render
-      setSelectedItems([...selectedItems]);
+      setAllFiles(prevFiles => {
+        const newFiles = { ...prevFiles };
+        Object.keys(newFiles).forEach(path => {
+          newFiles[path] = newFiles[path].map(f => 
+            f.id === fileId ? { ...f, shared: true } : f
+          );
+        });
+        return newFiles;
+      });
     }
   };
 
@@ -249,31 +248,65 @@ export default function OneDisk() {
       path: `${currentPath === '/' ? '' : currentPath}/nova-pasta`,
     };
     
-    const currentFiles = allFiles[currentPath] || [];
-    allFiles[currentPath] = [newFolder, ...currentFiles];
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
+      const currentFiles = newFiles[currentPath] || [];
+      newFiles[currentPath] = [newFolder, ...currentFiles];
+      return newFiles;
+    });
+    
     setEditingFolderId(newFolder.id);
     console.log("Nova pasta criada");
   };
 
   const handleFolderRename = (itemId: string, newName: string) => {
-    const currentFiles = allFiles[currentPath] || [];
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
+      const currentFiles = newFiles[currentPath] || [];
+      
+      if (newName.trim()) {
+        newFiles[currentPath] = currentFiles.map(file => 
+          file.id === itemId ? { ...file, name: newName.trim() } : file
+        );
+      } else {
+        newFiles[currentPath] = currentFiles.filter(file => file.id !== itemId);
+      }
+      
+      return newFiles;
+    });
     
-    if (newName.trim()) {
-      const updatedFiles = currentFiles.map(file => 
-        file.id === itemId ? { ...file, name: newName.trim() } : file
-      );
-      allFiles[currentPath] = updatedFiles;
-    } else {
-      allFiles[currentPath] = currentFiles.filter(file => file.id !== itemId);
-    }
     setEditingFolderId(null);
+  };
+
+  const handleUploadFiles = (files: FileList) => {
+    if (currentView !== 'files') return;
+    
+    const newFiles: FileItem[] = Array.from(files).map(file => ({
+      id: `file-${Date.now()}-${Math.random()}`,
+      name: file.name,
+      type: "file" as const,
+      size: file.size,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      shared: false,
+      favorite: false,
+      path: `${currentPath === '/' ? '' : currentPath}/${file.name}`,
+      mimeType: file.type || 'application/octet-stream'
+    }));
+    
+    setAllFiles(prevFiles => {
+      const updatedFiles = { ...prevFiles };
+      const currentFiles = updatedFiles[currentPath] || [];
+      updatedFiles[currentPath] = [...currentFiles, ...newFiles];
+      return updatedFiles;
+    });
+    
+    console.log("Arquivos carregados:", newFiles.map(f => f.name));
   };
 
   const handleReload = () => {
     console.log("Recarregando diretório atual:", currentPath);
     setSelectedItems([]);
-    // Aqui você implementaria a lógica real de recarregamento da API
-    // Por enquanto apenas limpa a seleção
   };
 
   const handleItemSelect = (item: FileItem) => {
@@ -304,8 +337,12 @@ export default function OneDisk() {
       setTrashedFiles(prev => [...prev, ...selectedFiles]);
       
       if (currentView === 'files') {
-        const remainingFiles = currentFiles.filter(file => !selectedItems.includes(file.id));
-        allFiles[currentPath] = remainingFiles;
+        setAllFiles(prevFiles => {
+          const newFiles = { ...prevFiles };
+          const remainingFiles = (newFiles[currentPath] || []).filter(file => !selectedItems.includes(file.id));
+          newFiles[currentPath] = remainingFiles;
+          return newFiles;
+        });
       }
       
       console.log("Itens movidos para lixeira:", selectedItems);
@@ -319,9 +356,12 @@ export default function OneDisk() {
     
     const selectedFiles = trashedFiles.filter(file => selectedItems.includes(file.id));
     
-    // Restaurar para o diretório raiz por simplicidade
-    const rootFiles = allFiles['/'] || [];
-    allFiles['/'] = [...rootFiles, ...selectedFiles];
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
+      const rootFiles = newFiles['/'] || [];
+      newFiles['/'] = [...rootFiles, ...selectedFiles];
+      return newFiles;
+    });
     
     setTrashedFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
     setSelectedItems([]);
@@ -382,11 +422,14 @@ export default function OneDisk() {
   const handleRemoveSharing = () => {
     if (currentView !== 'shared' || selectedItems.length === 0) return;
     
-    // Atualizar em todos os diretórios
-    Object.keys(allFiles).forEach(path => {
-      allFiles[path] = allFiles[path].map(file => 
-        selectedItems.includes(file.id) ? { ...file, shared: false } : file
-      );
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
+      Object.keys(newFiles).forEach(path => {
+        newFiles[path] = newFiles[path].map(file => 
+          selectedItems.includes(file.id) ? { ...file, shared: false } : file
+        );
+      });
+      return newFiles;
     });
     
     setSelectedItems([]);
@@ -396,11 +439,14 @@ export default function OneDisk() {
   const handleRemoveFavorites = () => {
     if (currentView !== 'favorites' || selectedItems.length === 0) return;
     
-    // Atualizar em todos os diretórios
-    Object.keys(allFiles).forEach(path => {
-      allFiles[path] = allFiles[path].map(file => 
-        selectedItems.includes(file.id) ? { ...file, favorite: false } : file
-      );
+    setAllFiles(prevFiles => {
+      const newFiles = { ...prevFiles };
+      Object.keys(newFiles).forEach(path => {
+        newFiles[path] = newFiles[path].map(file => 
+          selectedItems.includes(file.id) ? { ...file, favorite: false } : file
+        );
+      });
+      return newFiles;
     });
     
     setSelectedItems([]);
@@ -412,10 +458,8 @@ export default function OneDisk() {
       case 'trash':
         return trashedFiles;
       case 'shared':
-        // Retornar todos os arquivos compartilhados de todos os diretórios
         return Object.values(allFiles).flat().filter(file => file.shared);
       case 'favorites':
-        // Retornar todos os arquivos favoritos de todos os diretórios
         return Object.values(allFiles).flat().filter(file => file.favorite);
       default:
         return allFiles[currentPath] || [];
@@ -558,6 +602,7 @@ export default function OneDisk() {
               onSelectAll={handleSelectAll}
               onFolderRename={handleFolderRename}
               onNavigateToFolder={handleNavigateToFolder}
+              onUploadFiles={handleUploadFiles}
             />
           )}
           
