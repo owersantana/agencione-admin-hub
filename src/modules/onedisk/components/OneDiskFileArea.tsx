@@ -20,6 +20,7 @@ interface OneDiskFileAreaProps {
   onItemSelect: (item: FileItem) => void;
   onSelectAll: (selected: boolean) => void;
   onFolderRename: (folderId: string, newName: string) => void;
+  onNavigateToFolder?: (item: FileItem) => void;
 }
 
 export function OneDiskFileArea({
@@ -35,7 +36,8 @@ export function OneDiskFileArea({
   onShareClick,
   onItemSelect,
   onSelectAll,
-  onFolderRename
+  onFolderRename,
+  onNavigateToFolder
 }: OneDiskFileAreaProps) {
   const [editingName, setEditingName] = useState('');
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
@@ -46,10 +48,8 @@ export function OneDiskFileArea({
   const handleItemClick = (item: FileItem, event: React.MouseEvent) => {
     console.log("Item clicked:", item.name);
     if (event.ctrlKey || event.metaKey) {
-      // Multi-select logic
       onItemSelect(item);
     } else {
-      // Single select
       onItemSelect(item);
     }
   };
@@ -57,27 +57,24 @@ export function OneDiskFileArea({
   const handleItemDoubleClick = (item: FileItem) => {
     console.log("Item double clicked:", item.name);
     if (item.type === 'folder') {
-      onFileClick(item); // Navigate to folder
+      onFileClick(item);
     } else {
-      setPreviewFile(item); // Show preview for files
+      setPreviewFile(item);
     }
   };
 
   const handleRename = (item: FileItem) => {
-    if (item.type === 'folder') {
-      setEditingName(item.name);
-    }
+    setEditingName(item.name);
   };
 
-  const handleRenameSubmit = (folderId: string) => {
+  const handleRenameSubmit = (itemId: string) => {
     const trimmedName = editingName.trim();
     if (trimmedName) {
-      onFolderRename(folderId, trimmedName);
+      onFolderRename(itemId, trimmedName);
     } else {
-      // Se nome vazio, cancela a edição e remove a pasta se foi criada recentemente
-      const folder = files.find(f => f.id === folderId);
-      if (folder && folder.name === '') {
-        onFolderRename(folderId, ''); // Isso irá remover a pasta
+      const item = files.find(f => f.id === itemId);
+      if (item && item.name === '') {
+        onFolderRename(itemId, '');
       }
     }
     setEditingName('');
@@ -85,9 +82,8 @@ export function OneDiskFileArea({
 
   const handleRenameCancel = () => {
     setEditingName('');
-    // Se estava editando uma pasta nova (sem nome), remove ela
-    const editingFolder = files.find(f => f.id === editingFolderId);
-    if (editingFolder && editingFolder.name === '') {
+    const editingItem = files.find(f => f.id === editingFolderId);
+    if (editingItem && editingItem.name === '') {
       onFolderRename(editingFolderId!, '');
     }
   };
@@ -100,7 +96,6 @@ export function OneDiskFileArea({
     const files = event.target.files;
     if (files) {
       console.log('Files selected for upload:', files);
-      // Upload logic would be implemented here
     }
   };
 
@@ -139,6 +134,7 @@ export function OneDiskFileArea({
             onEditingNameChange={setEditingName}
             onRenameSubmit={handleRenameSubmit}
             onRenameCancel={handleRenameCancel}
+            onNavigateToFolder={onNavigateToFolder}
           />
         ))}
       </div>
@@ -165,6 +161,7 @@ export function OneDiskFileArea({
             onEditingNameChange={setEditingName}
             onRenameSubmit={handleRenameSubmit}
             onRenameCancel={handleRenameCancel}
+            onNavigateToFolder={onNavigateToFolder}
           />
         ))}
       </div>
@@ -183,7 +180,6 @@ export function OneDiskFileArea({
       
       {viewMode === 'list' ? renderListView() : renderGridView()}
 
-      {/* File Preview Modal */}
       {previewFile && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <OneDiskFilePreview

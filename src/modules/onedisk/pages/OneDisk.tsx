@@ -3,6 +3,7 @@ import { OneDiskToolbar } from "../components/OneDiskToolbar";
 import { OneDiskSidebar } from "../components/OneDiskSidebar";
 import { OneDiskFileArea } from "../components/OneDiskFileArea";
 import { OneDiskFooter } from "../components/OneDiskFooter";
+import { OneDiskShareModal } from "../components/OneDiskShareModal";
 import { FileItem, BucketInfo } from "../config";
 
 export default function OneDisk() {
@@ -10,13 +11,19 @@ export default function OneDisk() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentView, setCurrentView] = useState<'files' | 'trash' | 'shared' | 'favorites'>('files');
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [shareModal, setShareModal] = useState<{ isOpen: boolean; fileName: string; shareLink: string }>({
+    isOpen: false,
+    fileName: '',
+    shareLink: ''
+  });
+  
   const [bucketInfo] = useState<BucketInfo>({
     id: "bucket-1",
     name: "Meu Bucket",
     uuid: "b8f3c4e2-9a7d-4e1f-8c6b-2d5a9e7f1b3c",
     currentPath: "/documentos/projetos",
-    usedSpace: 45 * 1024 * 1024 * 1024, // 45GB
-    totalSpace: 100 * 1024 * 1024 * 1024, // 100GB
+    usedSpace: 45 * 1024 * 1024 * 1024,
+    totalSpace: 100 * 1024 * 1024 * 1024,
     objectsCount: 1247
   });
 
@@ -80,6 +87,13 @@ export default function OneDisk() {
     }
   };
 
+  const handleNavigateToFolder = (folder: FileItem) => {
+    if (folder.type === 'folder') {
+      console.log("Navigate into folder:", folder.name);
+      // Implementar navegação real aqui
+    }
+  };
+
   const handleFavoriteToggle = (fileId: string) => {
     const updateFiles = currentView === 'trash' ? setTrashedFiles : setFiles;
     updateFiles(prev => prev.map(file => 
@@ -88,10 +102,25 @@ export default function OneDisk() {
   };
 
   const handleShareClick = (fileId: string) => {
-    const updateFiles = currentView === 'trash' ? setTrashedFiles : setFiles;
-    updateFiles(prev => prev.map(file => 
-      file.id === fileId ? { ...file, shared: !file.shared } : file
-    ));
+    const currentFiles = getCurrentFiles();
+    const file = currentFiles.find(f => f.id === fileId);
+    
+    if (file) {
+      // Gerar link de compartilhamento
+      const shareLink = `https://onedisk.example.com/share/${file.id}`;
+      
+      setShareModal({
+        isOpen: true,
+        fileName: file.name,
+        shareLink: shareLink
+      });
+      
+      // Marcar como compartilhado
+      const updateFiles = currentView === 'trash' ? setTrashedFiles : setFiles;
+      updateFiles(prev => prev.map(f => 
+        f.id === fileId ? { ...f, shared: true } : f
+      ));
+    }
   };
 
   const handleCreateFolder = () => {
@@ -114,20 +143,21 @@ export default function OneDisk() {
     console.log("Nova pasta criada");
   };
 
-  const handleFolderRename = (folderId: string, newName: string) => {
+  const handleFolderRename = (itemId: string, newName: string) => {
     if (newName.trim()) {
       setFiles(prev => prev.map(file => 
-        file.id === folderId ? { ...file, name: newName.trim() } : file
+        file.id === itemId ? { ...file, name: newName.trim() } : file
       ));
     } else {
-      setFiles(prev => prev.filter(file => file.id !== folderId));
+      setFiles(prev => prev.filter(file => file.id !== itemId));
     }
     setEditingFolderId(null);
   };
 
   const handleReload = () => {
-    console.log("Recarregando conteúdo...");
+    console.log("Recarregando diretório atual:", getCurrentPath());
     setSelectedItems([]);
+    // Aqui você implementaria a lógica real de recarregamento
   };
 
   const handleItemSelect = (item: FileItem) => {
@@ -370,6 +400,7 @@ export default function OneDisk() {
               onItemSelect={handleItemSelect}
               onSelectAll={handleSelectAll}
               onFolderRename={handleFolderRename}
+              onNavigateToFolder={handleNavigateToFolder}
             />
           )}
           
@@ -392,6 +423,13 @@ export default function OneDisk() {
           />
         </div>
       </div>
+
+      <OneDiskShareModal
+        isOpen={shareModal.isOpen}
+        onClose={() => setShareModal(prev => ({ ...prev, isOpen: false }))}
+        fileName={shareModal.fileName}
+        shareLink={shareModal.shareLink}
+      />
     </div>
   );
 }

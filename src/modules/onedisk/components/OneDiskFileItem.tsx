@@ -19,7 +19,8 @@ import {
   Share,
   Info,
   Heart,
-  Share2
+  Share2,
+  FolderOpen
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,6 +45,7 @@ interface OneDiskFileItemProps {
   onEditingNameChange: (name: string) => void;
   onRenameSubmit: (itemId: string) => void;
   onRenameCancel: () => void;
+  onNavigateToFolder?: (item: FileItem) => void;
 }
 
 export function OneDiskFileItem({
@@ -59,7 +61,8 @@ export function OneDiskFileItem({
   onRename,
   onEditingNameChange,
   onRenameSubmit,
-  onRenameCancel
+  onRenameCancel,
+  onNavigateToFolder
 }: OneDiskFileItemProps) {
   const [showIcons, setShowIcons] = useState(false);
 
@@ -128,12 +131,10 @@ export function OneDiskFileItem({
               <span className="text-sm font-medium truncate">
                 {item.name}
               </span>
-              {(showIcons || isSelected) && (
-                <div className="flex items-center space-x-1">
-                  {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current" />}
-                  {item.shared && <Share2 className="h-4 w-4 text-blue-500" />}
-                </div>
-              )}
+              <div className="flex items-center space-x-1">
+                {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current" />}
+                {item.shared && <Share2 className="h-4 w-4 text-blue-500" />}
+              </div>
             </div>
           )}
         </div>
@@ -157,12 +158,16 @@ export function OneDiskFileItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {item.type === 'folder' && (
-                <DropdownMenuItem onClick={() => onRename(item)}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Renomear
+              {item.type === 'folder' && onNavigateToFolder && (
+                <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Abrir pasta
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => onRename(item)}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Renomear
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Download className="h-4 w-4 mr-2" />
                 Baixar
@@ -190,7 +195,7 @@ export function OneDiskFileItem({
     );
   }
 
-  // Grid view - responsivo e maior
+  // Grid view
   return (
     <Card
       className={cn(
@@ -207,13 +212,11 @@ export function OneDiskFileItem({
           <div className="relative">
             <Icon className="h-16 w-16 text-muted-foreground" />
             
-            {/* Status indicators */}
-            {(showIcons || isSelected) && (
-              <div className="absolute -bottom-1 -right-1 flex space-x-1">
-                {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current bg-background rounded-full p-0.5" />}
-                {item.shared && <Share2 className="h-4 w-4 text-blue-500 bg-background rounded-full p-0.5" />}
-              </div>
-            )}
+            {/* Status indicators - sempre visíveis */}
+            <div className="absolute -bottom-1 -right-1 flex space-x-1">
+              {item.favorite && <Heart className="h-4 w-4 text-red-500 fill-current bg-background rounded-full p-0.5" />}
+              {item.shared && <Share2 className="h-4 w-4 text-blue-500 bg-background rounded-full p-0.5" />}
+            </div>
           </div>
           
           <div className="w-full text-center">
@@ -255,12 +258,16 @@ export function OneDiskFileItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {item.type === 'folder' && (
-                <DropdownMenuItem onClick={() => onRename(item)}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Renomear
+              {item.type === 'folder' && onNavigateToFolder && (
+                <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Abrir pasta
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => onRename(item)}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Renomear
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Download className="h-4 w-4 mr-2" />
                 Baixar
