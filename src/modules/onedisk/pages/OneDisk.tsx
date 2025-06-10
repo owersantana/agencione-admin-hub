@@ -5,12 +5,16 @@ import { OneDiskFileArea } from "../components/OneDiskFileArea";
 import { OneDiskFooter } from "../components/OneDiskFooter";
 import { OneDiskShareModal } from "../components/OneDiskShareModal";
 import { FileItem, BucketInfo } from "../config";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function OneDisk() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentView, setCurrentView] = useState<'files' | 'trash' | 'shared' | 'favorites'>('files');
+  const [currentPath, setCurrentPath] = useState('/');
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [shareModal, setShareModal] = useState<{ isOpen: boolean; fileName: string; shareLink: string }>({
     isOpen: false,
     fileName: '',
@@ -21,66 +25,159 @@ export default function OneDisk() {
     id: "bucket-1",
     name: "Meu Bucket",
     uuid: "b8f3c4e2-9a7d-4e1f-8c6b-2d5a9e7f1b3c",
-    currentPath: "/documentos/projetos",
+    currentPath: currentPath,
     usedSpace: 45 * 1024 * 1024 * 1024,
     totalSpace: 100 * 1024 * 1024 * 1024,
     objectsCount: 1247
   });
 
-  const [files, setFiles] = useState<FileItem[]>([
-    {
-      id: "1",
-      name: "Pasta de Imagens",
-      type: "folder",
-      size: 0,
-      createdAt: new Date("2024-01-15"),
-      modifiedAt: new Date("2024-01-20"),
-      shared: false,
-      favorite: true,
-      path: "/documentos/projetos/imagens",
-    },
-    {
-      id: "2",
-      name: "Relatório Mensal.pdf",
-      type: "file",
-      size: 2560000,
-      createdAt: new Date("2024-01-18"),
-      modifiedAt: new Date("2024-01-18"),
-      shared: true,
-      favorite: false,
-      path: "/documentos/projetos/relatorio.pdf",
-      mimeType: "application/pdf"
-    },
-    {
-      id: "3",
-      name: "Apresentação.pptx",
-      type: "file",
-      size: 15360000,
-      createdAt: new Date("2024-01-19"),
-      modifiedAt: new Date("2024-01-19"),
-      shared: false,
-      favorite: true,
-      path: "/documentos/projetos/apresentacao.pptx",
-      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-    },
-    {
-      id: "4",
-      name: "video_demo.mp4",
-      type: "file",
-      size: 105600000,
-      createdAt: new Date("2024-01-17"),
-      modifiedAt: new Date("2024-01-17"),
-      shared: false,
-      favorite: false,
-      path: "/documentos/projetos/video_demo.mp4",
-      mimeType: "video/mp4"
-    }
-  ]);
+  // Mock data organizado por diretórios
+  const allFiles: { [path: string]: FileItem[] } = {
+    '/': [
+      {
+        id: "1",
+        name: "Imagens",
+        type: "folder",
+        size: 0,
+        createdAt: new Date("2024-01-15"),
+        modifiedAt: new Date("2024-01-20"),
+        shared: false,
+        favorite: true,
+        path: "/imagens",
+      },
+      {
+        id: "2",
+        name: "Documentos",
+        type: "folder",
+        size: 0,
+        createdAt: new Date("2024-01-16"),
+        modifiedAt: new Date("2024-01-21"),
+        shared: false,
+        favorite: false,
+        path: "/documentos",
+      },
+      {
+        id: "3",
+        name: "Downloads",
+        type: "folder",
+        size: 0,
+        createdAt: new Date("2024-01-17"),
+        modifiedAt: new Date("2024-01-22"),
+        shared: false,
+        favorite: false,
+        path: "/downloads",
+      },
+      {
+        id: "4",
+        name: "Manual.pdf",
+        type: "file",
+        size: 1200000,
+        createdAt: new Date("2024-01-18"),
+        modifiedAt: new Date("2024-01-18"),
+        shared: false,
+        favorite: false,
+        path: "/manual.pdf",
+        mimeType: "application/pdf"
+      }
+    ],
+    '/imagens': [
+      {
+        id: "img1",
+        name: "foto1.jpg",
+        type: "file",
+        size: 850000,
+        createdAt: new Date("2024-01-19"),
+        modifiedAt: new Date("2024-01-19"),
+        shared: true,
+        favorite: false,
+        path: "/imagens/foto1.jpg",
+        mimeType: "image/jpeg"
+      },
+      {
+        id: "img2",
+        name: "screenshot.png",
+        type: "file",
+        size: 450000,
+        createdAt: new Date("2024-01-20"),
+        modifiedAt: new Date("2024-01-20"),
+        shared: false,
+        favorite: true,
+        path: "/imagens/screenshot.png",
+        mimeType: "image/png"
+      }
+    ],
+    '/documentos': [
+      {
+        id: "doc1",
+        name: "Projetos",
+        type: "folder",
+        size: 0,
+        createdAt: new Date("2024-01-16"),
+        modifiedAt: new Date("2024-01-21"),
+        shared: false,
+        favorite: false,
+        path: "/documentos/projetos",
+      },
+      {
+        id: "doc2",
+        name: "Contrato.pdf",
+        type: "file",
+        size: 2560000,
+        createdAt: new Date("2024-01-17"),
+        modifiedAt: new Date("2024-01-17"),
+        shared: false,
+        favorite: false,
+        path: "/documentos/contrato.pdf",
+        mimeType: "application/pdf"
+      }
+    ],
+    '/documentos/projetos': [
+      {
+        id: "proj1",
+        name: "Projeto A",
+        type: "folder",
+        size: 0,
+        createdAt: new Date("2024-01-16"),
+        modifiedAt: new Date("2024-01-21"),
+        shared: true,
+        favorite: false,
+        path: "/documentos/projetos/projeto-a",
+      },
+      {
+        id: "proj2",
+        name: "Relatório.docx",
+        type: "file",
+        size: 1800000,
+        createdAt: new Date("2024-01-18"),
+        modifiedAt: new Date("2024-01-18"),
+        shared: false,
+        favorite: true,
+        path: "/documentos/projetos/relatorio.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      }
+    ],
+    '/downloads': [
+      {
+        id: "down1",
+        name: "video_demo.mp4",
+        type: "file",
+        size: 105600000,
+        createdAt: new Date("2024-01-17"),
+        modifiedAt: new Date("2024-01-17"),
+        shared: false,
+        favorite: false,
+        path: "/downloads/video_demo.mp4",
+        mimeType: "video/mp4"
+      }
+    ]
+  };
 
   const [trashedFiles, setTrashedFiles] = useState<FileItem[]>([]);
 
   const handleFileClick = (file: FileItem) => {
     if (file.type === 'folder') {
+      setCurrentPath(file.path);
+      setSelectedItems([]);
       console.log("Navigate to folder:", file.name);
     } else {
       console.log("Open file:", file.name);
@@ -89,16 +186,27 @@ export default function OneDisk() {
 
   const handleNavigateToFolder = (folder: FileItem) => {
     if (folder.type === 'folder') {
+      setCurrentPath(folder.path);
+      setSelectedItems([]);
       console.log("Navigate into folder:", folder.name);
-      // Implementar navegação real aqui
     }
   };
 
   const handleFavoriteToggle = (fileId: string) => {
-    const updateFiles = currentView === 'trash' ? setTrashedFiles : setFiles;
-    updateFiles(prev => prev.map(file => 
-      file.id === fileId ? { ...file, favorite: !file.favorite } : file
-    ));
+    const currentFiles = getCurrentFiles();
+    const targetFile = currentFiles.find(f => f.id === fileId);
+    
+    if (targetFile) {
+      // Atualizar no allFiles
+      const filesInPath = allFiles[currentPath] || [];
+      const updatedFiles = filesInPath.map(file => 
+        file.id === fileId ? { ...file, favorite: !file.favorite } : file
+      );
+      allFiles[currentPath] = updatedFiles;
+      
+      // Forçar re-render
+      setSelectedItems([...selectedItems]);
+    }
   };
 
   const handleShareClick = (fileId: string) => {
@@ -106,7 +214,6 @@ export default function OneDisk() {
     const file = currentFiles.find(f => f.id === fileId);
     
     if (file) {
-      // Gerar link de compartilhamento
       const shareLink = `https://onedisk.example.com/share/${file.id}`;
       
       setShareModal({
@@ -116,10 +223,14 @@ export default function OneDisk() {
       });
       
       // Marcar como compartilhado
-      const updateFiles = currentView === 'trash' ? setTrashedFiles : setFiles;
-      updateFiles(prev => prev.map(f => 
+      const filesInPath = allFiles[currentPath] || [];
+      const updatedFiles = filesInPath.map(f => 
         f.id === fileId ? { ...f, shared: true } : f
-      ));
+      );
+      allFiles[currentPath] = updatedFiles;
+      
+      // Forçar re-render
+      setSelectedItems([...selectedItems]);
     }
   };
 
@@ -135,29 +246,34 @@ export default function OneDisk() {
       modifiedAt: new Date(),
       shared: false,
       favorite: false,
-      path: `${bucketInfo.currentPath}/nova-pasta`,
+      path: `${currentPath === '/' ? '' : currentPath}/nova-pasta`,
     };
     
-    setFiles(prev => [newFolder, ...prev]);
+    const currentFiles = allFiles[currentPath] || [];
+    allFiles[currentPath] = [newFolder, ...currentFiles];
     setEditingFolderId(newFolder.id);
     console.log("Nova pasta criada");
   };
 
   const handleFolderRename = (itemId: string, newName: string) => {
+    const currentFiles = allFiles[currentPath] || [];
+    
     if (newName.trim()) {
-      setFiles(prev => prev.map(file => 
+      const updatedFiles = currentFiles.map(file => 
         file.id === itemId ? { ...file, name: newName.trim() } : file
-      ));
+      );
+      allFiles[currentPath] = updatedFiles;
     } else {
-      setFiles(prev => prev.filter(file => file.id !== itemId));
+      allFiles[currentPath] = currentFiles.filter(file => file.id !== itemId);
     }
     setEditingFolderId(null);
   };
 
   const handleReload = () => {
-    console.log("Recarregando diretório atual:", getCurrentPath());
+    console.log("Recarregando diretório atual:", currentPath);
     setSelectedItems([]);
-    // Aqui você implementaria a lógica real de recarregamento
+    // Aqui você implementaria a lógica real de recarregamento da API
+    // Por enquanto apenas limpa a seleção
   };
 
   const handleItemSelect = (item: FileItem) => {
@@ -186,7 +302,12 @@ export default function OneDisk() {
       console.log("Itens excluídos permanentemente:", selectedItems);
     } else {
       setTrashedFiles(prev => [...prev, ...selectedFiles]);
-      setFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
+      
+      if (currentView === 'files') {
+        const remainingFiles = currentFiles.filter(file => !selectedItems.includes(file.id));
+        allFiles[currentPath] = remainingFiles;
+      }
+      
       console.log("Itens movidos para lixeira:", selectedItems);
     }
     
@@ -197,7 +318,11 @@ export default function OneDisk() {
     if (currentView !== 'trash' || selectedItems.length === 0) return;
     
     const selectedFiles = trashedFiles.filter(file => selectedItems.includes(file.id));
-    setFiles(prev => [...prev, ...selectedFiles]);
+    
+    // Restaurar para o diretório raiz por simplicidade
+    const rootFiles = allFiles['/'] || [];
+    allFiles['/'] = [...rootFiles, ...selectedFiles];
+    
     setTrashedFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
     setSelectedItems([]);
     console.log("Itens restaurados:", selectedItems);
@@ -218,6 +343,8 @@ export default function OneDisk() {
   };
 
   const handlePathClick = (path: string) => {
+    setCurrentPath(path);
+    setSelectedItems([]);
     console.log("Navigate to path:", path);
   };
 
@@ -246,16 +373,22 @@ export default function OneDisk() {
   };
 
   const handleNavigate = (path: string) => {
-    console.log("Navigate to:", path);
+    setCurrentPath(path);
+    setCurrentView('files');
     setSelectedItems([]);
+    console.log("Navigate to:", path);
   };
 
   const handleRemoveSharing = () => {
     if (currentView !== 'shared' || selectedItems.length === 0) return;
     
-    setFiles(prev => prev.map(file => 
-      selectedItems.includes(file.id) ? { ...file, shared: false } : file
-    ));
+    // Atualizar em todos os diretórios
+    Object.keys(allFiles).forEach(path => {
+      allFiles[path] = allFiles[path].map(file => 
+        selectedItems.includes(file.id) ? { ...file, shared: false } : file
+      );
+    });
+    
     setSelectedItems([]);
     console.log("Compartilhamento removido:", selectedItems);
   };
@@ -263,9 +396,13 @@ export default function OneDisk() {
   const handleRemoveFavorites = () => {
     if (currentView !== 'favorites' || selectedItems.length === 0) return;
     
-    setFiles(prev => prev.map(file => 
-      selectedItems.includes(file.id) ? { ...file, favorite: false } : file
-    ));
+    // Atualizar em todos os diretórios
+    Object.keys(allFiles).forEach(path => {
+      allFiles[path] = allFiles[path].map(file => 
+        selectedItems.includes(file.id) ? { ...file, favorite: false } : file
+      );
+    });
+    
     setSelectedItems([]);
     console.log("Removido dos favoritos:", selectedItems);
   };
@@ -275,11 +412,13 @@ export default function OneDisk() {
       case 'trash':
         return trashedFiles;
       case 'shared':
-        return files.filter(file => file.shared);
+        // Retornar todos os arquivos compartilhados de todos os diretórios
+        return Object.values(allFiles).flat().filter(file => file.shared);
       case 'favorites':
-        return files.filter(file => file.favorite);
+        // Retornar todos os arquivos favoritos de todos os diretórios
+        return Object.values(allFiles).flat().filter(file => file.favorite);
       default:
-        return files;
+        return allFiles[currentPath] || [];
     }
   };
 
@@ -305,7 +444,7 @@ export default function OneDisk() {
       case 'favorites':
         return "/favoritos";
       default:
-        return bucketInfo.currentPath;
+        return currentPath;
     }
   };
 
@@ -345,7 +484,15 @@ export default function OneDisk() {
           </div>
         );
       default:
-        return null;
+        return (
+          <div className="text-center space-y-4">
+            <div className="text-6xl opacity-20">📁</div>
+            <h3 className="text-lg font-medium">Diretório vazio</h3>
+            <p className="text-muted-foreground">
+              Este diretório não contém nenhum arquivo ou pasta.
+            </p>
+          </div>
+        );
     }
   };
 
@@ -358,7 +505,14 @@ export default function OneDisk() {
         isInShared={currentView === 'shared'}
         isInFavorites={currentView === 'favorites'}
         onNavigateHome={handleBackToFiles}
-        onNavigateBack={() => console.log("Navigate back")}
+        onNavigateBack={() => {
+          const pathParts = currentPath.split('/').filter(Boolean);
+          if (pathParts.length > 0) {
+            pathParts.pop();
+            const newPath = '/' + pathParts.join('/');
+            setCurrentPath(newPath === '/' ? '/' : newPath);
+          }
+        }}
         onNavigateForward={() => console.log("Navigate forward")}
         onReload={handleReload}
         onCreateFolder={handleCreateFolder}
@@ -366,6 +520,7 @@ export default function OneDisk() {
         onShare={() => console.log("Share")}
         onInfo={() => console.log("Info")}
         onViewModeChange={setViewMode}
+        onMenuClick={() => setSidebarOpen(true)}
       />
       
       <div className="flex flex-1 overflow-hidden">
@@ -374,6 +529,8 @@ export default function OneDisk() {
           totalSpace={bucketInfo.totalSpace}
           objectsCount={bucketInfo.objectsCount}
           currentPath={getCurrentPath()}
+          isOpen={isMobile ? sidebarOpen : true}
+          onClose={() => setSidebarOpen(false)}
           onTrashClick={handleTrashClick}
           onSharedClick={handleSharedClick}
           onFavoritesClick={handleFavoritesClick}

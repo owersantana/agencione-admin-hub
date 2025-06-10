@@ -64,7 +64,6 @@ export function OneDiskFileItem({
   onRenameCancel,
   onNavigateToFolder
 }: OneDiskFileItemProps) {
-  const [showIcons, setShowIcons] = useState(false);
 
   const getFileIcon = (item: FileItem) => {
     if (item.type === 'folder') return Folder;
@@ -77,6 +76,19 @@ export function OneDiskFileItem({
     if (mimeType.includes('video')) return Video;
     
     return File;
+  };
+
+  const getFileColor = (item: FileItem) => {
+    if (item.type === 'folder') return 'text-blue-600 dark:text-blue-400';
+    
+    const mimeType = item.mimeType || '';
+    if (mimeType.includes('pdf') || mimeType.includes('document')) return 'text-red-600 dark:text-red-400';
+    if (mimeType.includes('image')) return 'text-green-600 dark:text-green-400';
+    if (mimeType.includes('zip') || mimeType.includes('archive')) return 'text-orange-600 dark:text-orange-400';
+    if (mimeType.includes('audio')) return 'text-purple-600 dark:text-purple-400';
+    if (mimeType.includes('video')) return 'text-pink-600 dark:text-pink-400';
+    
+    return 'text-gray-600 dark:text-gray-400';
   };
 
   const formatFileSize = (bytes: number) => {
@@ -98,20 +110,19 @@ export function OneDiskFileItem({
   };
 
   const Icon = getFileIcon(item);
+  const iconColor = getFileColor(item);
 
   if (viewMode === 'list') {
     return (
       <div
         className={cn(
-          "flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer border transition-all",
+          "flex items-center space-x-3 p-3 rounded-lg hover:bg-accent cursor-pointer border transition-all group",
           isSelected && "bg-accent border-primary ring-1 ring-primary"
         )}
         onClick={(e) => onItemClick(item, e)}
         onDoubleClick={() => onItemDoubleClick(item)}
-        onMouseEnter={() => setShowIcons(true)}
-        onMouseLeave={() => setShowIcons(false)}
       >
-        <Icon className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+        <Icon className={cn("h-5 w-5 flex-shrink-0", iconColor)} />
         
         <div className="flex-1 min-w-0">
           {isEditing ? (
@@ -139,9 +150,9 @@ export function OneDiskFileItem({
           )}
         </div>
         
-        <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+        <div className="hidden sm:flex items-center space-x-4 text-xs text-muted-foreground">
           {item.size > 0 && (
-            <span className="w-16 text-right hidden sm:block">
+            <span className="w-16 text-right">
               {formatFileSize(item.size)}
             </span>
           )}
@@ -150,47 +161,50 @@ export function OneDiskFileItem({
           </span>
         </div>
 
-        {(showIcons || isSelected) && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {item.type === 'folder' && onNavigateToFolder && (
-                <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Abrir pasta
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onRename(item)}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                Renomear
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+            {item.type === 'folder' && onNavigateToFolder && (
+              <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Abrir pasta
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Download className="h-4 w-4 mr-2" />
-                Baixar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onShareClick(item.id)}>
-                <Share className="h-4 w-4 mr-2" />
-                Compartilhar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
-                <Heart className="h-4 w-4 mr-2" />
-                {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Info className="h-4 w-4 mr-2" />
-                Informações
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            )}
+            <DropdownMenuItem onClick={() => onRename(item)}>
+              <Edit2 className="h-4 w-4 mr-2" />
+              Renomear
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Download className="h-4 w-4 mr-2" />
+              Baixar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onShareClick(item.id)}>
+              <Share className="h-4 w-4 mr-2" />
+              Compartilhar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+              <Heart className="h-4 w-4 mr-2" />
+              {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Info className="h-4 w-4 mr-2" />
+              Informações
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     );
   }
@@ -204,13 +218,11 @@ export function OneDiskFileItem({
       )}
       onClick={(e) => onItemClick(item, e)}
       onDoubleClick={() => onItemDoubleClick(item)}
-      onMouseEnter={() => setShowIcons(true)}
-      onMouseLeave={() => setShowIcons(false)}
     >
       <CardContent className="p-4">
         <div className="flex flex-col items-center space-y-3">
           <div className="relative">
-            <Icon className="h-16 w-16 text-muted-foreground" />
+            <Icon className={cn("h-16 w-16", iconColor)} />
             
             {/* Status indicators - sempre visíveis */}
             <div className="absolute -bottom-1 -right-1 flex space-x-1">
@@ -246,51 +258,50 @@ export function OneDiskFileItem({
           )}
         </div>
 
-        {(showIcons || isSelected) && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-2 right-2 h-6 w-6 p-0"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {item.type === 'folder' && onNavigateToFolder && (
-                <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Abrir pasta
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onRename(item)}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                Renomear
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-background border shadow-lg">
+            {item.type === 'folder' && onNavigateToFolder && (
+              <DropdownMenuItem onClick={() => onNavigateToFolder(item)}>
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Abrir pasta
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Download className="h-4 w-4 mr-2" />
-                Baixar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onShareClick(item.id)}>
-                <Share className="h-4 w-4 mr-2" />
-                Compartilhar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
-                <Heart className="h-4 w-4 mr-2" />
-                {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Info className="h-4 w-4 mr-2" />
-                Informações
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+            )}
+            <DropdownMenuItem onClick={() => onRename(item)}>
+              <Edit2 className="h-4 w-4 mr-2" />
+              Renomear
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Download className="h-4 w-4 mr-2" />
+              Baixar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onShareClick(item.id)}>
+              <Share className="h-4 w-4 mr-2" />
+              Compartilhar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onFavoriteToggle(item.id)}>
+              <Heart className="h-4 w-4 mr-2" />
+              {item.favorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Info className="h-4 w-4 mr-2" />
+              Informações
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardContent>
     </Card>
   );
