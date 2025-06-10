@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { OneDiskSidebar } from '../components/OneDiskSidebar';
 import { OneDiskToolbar } from '../components/OneDiskToolbar';
@@ -176,7 +174,7 @@ const mockFiles: FileItem[] = [
   }
 ];
 
-let mockFolderContents = {
+let mockFolderContents: Record<string, FileItem[]> = {
   '/': mockFiles,
   '/imagens': [
     {
@@ -295,7 +293,7 @@ export default function OneDisk() {
     if (currentView === 'trash') {
       return [];
     }
-    return mockFolderContents[currentPath as keyof typeof mockFolderContents] || [];
+    return mockFolderContents[currentPath] || [];
   }, [currentPath, currentView]);
 
   const getAllFiles = () => {
@@ -335,11 +333,11 @@ export default function OneDisk() {
     };
     
     // Adicionar a nova pasta ao diretório atual
-    if (!mockFolderContents[currentPath as keyof typeof mockFolderContents]) {
-      mockFolderContents[currentPath as keyof typeof mockFolderContents] = [];
+    if (!mockFolderContents[currentPath]) {
+      mockFolderContents[currentPath] = [];
     }
     
-    mockFolderContents[currentPath as keyof typeof mockFolderContents].push(newFolder);
+    mockFolderContents[currentPath].push(newFolder);
     setEditingFolderId(newFolder.id);
   };
 
@@ -348,7 +346,7 @@ export default function OneDisk() {
     
     if (newName.trim() === '') {
       // Remove folder if name is empty
-      const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+      const currentFolderFiles = mockFolderContents[currentPath];
       if (currentFolderFiles) {
         const index = currentFolderFiles.findIndex(f => f.id === folderId);
         if (index > -1) {
@@ -357,7 +355,7 @@ export default function OneDisk() {
       }
     } else {
       // Update folder name
-      const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+      const currentFolderFiles = mockFolderContents[currentPath];
       if (currentFolderFiles) {
         const folderIndex = currentFolderFiles.findIndex(f => f.id === folderId);
         if (folderIndex > -1) {
@@ -389,7 +387,7 @@ export default function OneDisk() {
     console.log("Toggling favorite for:", fileId);
     // Procurar e atualizar em todos os diretórios
     Object.keys(mockFolderContents).forEach(path => {
-      const files = mockFolderContents[path as keyof typeof mockFolderContents];
+      const files = mockFolderContents[path];
       const fileIndex = files.findIndex(f => f.id === fileId);
       if (fileIndex > -1) {
         files[fileIndex] = {
@@ -411,7 +409,7 @@ export default function OneDisk() {
   const handleReload = () => {
     console.log("Recarregando diretório atual:", currentPath);
     // Simulate reload by updating modified date
-    const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+    const currentFolderFiles = mockFolderContents[currentPath];
     if (currentFolderFiles) {
       currentFolderFiles.forEach(file => {
         file.modifiedAt = new Date();
