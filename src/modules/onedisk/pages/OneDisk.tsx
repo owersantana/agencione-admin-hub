@@ -1,244 +1,328 @@
-import { useState } from "react";
-import { OneDiskToolbar } from "../components/OneDiskToolbar";
-import { OneDiskSidebar } from "../components/OneDiskSidebar";
-import { OneDiskFileArea } from "../components/OneDiskFileArea";
-import { OneDiskFooter } from "../components/OneDiskFooter";
-import { OneDiskShareModal } from "../components/OneDiskShareModal";
-import { FileItem, BucketInfo } from "../config";
-import { useIsMobile } from "@/hooks/use-mobile";
+import React, { useState } from 'react';
+import { OneDiskSidebar } from '../components/OneDiskSidebar';
+import { OneDiskToolbar } from '../components/OneDiskToolbar';
+import { OneDiskFileArea } from '../components/OneDiskFileArea';
+import { OneDiskShareModal } from '../components/OneDiskShareModal';
+import { FileItem } from '../config';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const mockFiles: FileItem[] = [
+  {
+    id: "5",
+    name: "Apresentação da Empresa.pptx",
+    type: "file",
+    size: 5500000,
+    createdAt: new Date("2024-01-10"),
+    modifiedAt: new Date("2024-01-12"),
+    shared: true,
+    favorite: false,
+    path: "/apresentacao.pptx",
+    mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  },
+  {
+    id: "6",
+    name: "Financeiro 2023.xlsx",
+    type: "file",
+    size: 2800000,
+    createdAt: new Date("2024-01-05"),
+    modifiedAt: new Date("2024-01-08"),
+    shared: false,
+    favorite: true,
+    path: "/financeiro.xlsx",
+    mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  },
+  {
+    id: "7",
+    name: "Estratégia de Marketing.docx",
+    type: "file",
+    size: 3200000,
+    createdAt: new Date("2023-12-28"),
+    modifiedAt: new Date("2024-01-02"),
+    shared: true,
+    favorite: true,
+    path: "/estrategia.docx",
+    mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  },
+  {
+    id: "8",
+    name: "Plano de Contratações.pdf",
+    type: "file",
+    size: 1500000,
+    createdAt: new Date("2023-12-20"),
+    modifiedAt: new Date("2023-12-24"),
+    shared: false,
+    favorite: false,
+    path: "/plano.pdf",
+    mimeType: "application/pdf"
+  },
+  {
+    id: "9",
+    name: "Diretrizes de Design.txt",
+    type: "file",
+    size: 50000,
+    createdAt: new Date("2023-12-15"),
+    modifiedAt: new Date("2023-12-18"),
+    shared: true,
+    favorite: false,
+    path: "/diretrizes.txt",
+    mimeType: "text/plain"
+  },
+  {
+    id: "10",
+    name: "Backup do Sistema.zip",
+    type: "file",
+    size: 2100000000,
+    createdAt: new Date("2023-12-10"),
+    modifiedAt: new Date("2023-12-12"),
+    shared: false,
+    favorite: false,
+    path: "/backup.zip",
+    mimeType: "application/zip"
+  },
+  {
+    id: "11",
+    name: "Músicas Favoritas.mp3",
+    type: "file",
+    size: 6800000,
+    createdAt: new Date("2023-12-01"),
+    modifiedAt: new Date("2023-12-05"),
+    shared: true,
+    favorite: true,
+    path: "/musicas.mp3",
+    mimeType: "audio/mpeg"
+  },
+  {
+    id: "12",
+    name: "Vídeo Institucional.mp4",
+    type: "file",
+    size: 150000000,
+    createdAt: new Date("2023-11-25"),
+    modifiedAt: new Date("2023-11-30"),
+    shared: false,
+    favorite: false,
+    path: "/video.mp4",
+    mimeType: "video/mp4"
+  },
+  {
+    id: "13",
+    name: "Roteiro da Apresentação.key",
+    type: "file",
+    size: 4200000,
+    createdAt: new Date("2023-11-20"),
+    modifiedAt: new Date("2023-11-22"),
+    shared: true,
+    favorite: false,
+    path: "/roteiro.key",
+    mimeType: "application/vnd.apple.keynote"
+  },
+  {
+    id: "14",
+    name: "Ícones do Projeto.svg",
+    type: "file",
+    size: 900000,
+    createdAt: new Date("2023-11-15"),
+    modifiedAt: new Date("2023-11-17"),
+    shared: false,
+    favorite: true,
+    path: "/icones.svg",
+    mimeType: "image/svg+xml"
+  },
+  {
+    id: "1",
+    name: "Pasta de Imagens",
+    type: "folder",
+    size: 0,
+    createdAt: new Date("2024-01-15"),
+    modifiedAt: new Date("2024-01-20"),
+    shared: false,
+    favorite: true,
+    path: "/imagens",
+  },
+  {
+    id: "2",
+    name: "Manual.pdf",
+    type: "file",
+    size: 1200000,
+    createdAt: new Date("2024-01-18"),
+    modifiedAt: new Date("2024-01-18"),
+    shared: false,
+    favorite: false,
+    path: "/manual.pdf",
+    mimeType: "application/pdf"
+  },
+  {
+    id: "3",
+    name: "Documentos",
+    type: "folder",
+    size: 0,
+    createdAt: new Date("2024-01-16"),
+    modifiedAt: new Date("2024-01-21"),
+    shared: true,
+    favorite: false,
+    path: "/documentos",
+  },
+  {
+    id: "4",
+    name: "Downloads",
+    type: "folder",
+    size: 0,
+    createdAt: new Date("2024-01-14"),
+    modifiedAt: new Date("2024-01-17"),
+    shared: false,
+    favorite: false,
+    path: "/downloads",
+  }
+];
+
+const mockFolderContents = {
+  '/': mockFiles,
+  '/imagens': [
+    {
+      id: "img1",
+      name: "foto1.jpg",
+      type: "file" as const,
+      size: 850000,
+      createdAt: new Date("2024-01-19"),
+      modifiedAt: new Date("2024-01-19"),
+      shared: true,
+      favorite: false,
+      path: "/imagens/foto1.jpg",
+      mimeType: "image/jpeg"
+    },
+    {
+      id: "img2",
+      name: "screenshot.png",
+      type: "file" as const,
+      size: 450000,
+      createdAt: new Date("2024-01-20"),
+      modifiedAt: new Date("2024-01-20"),
+      shared: false,
+      favorite: true,
+      path: "/imagens/screenshot.png",
+      mimeType: "image/png"
+    }
+  ],
+  '/documentos': [
+    {
+      id: "doc1",
+      name: "Contrato.pdf",
+      type: "file" as const,
+      size: 2560000,
+      createdAt: new Date("2024-01-17"),
+      modifiedAt: new Date("2024-01-17"),
+      shared: false,
+      favorite: false,
+      path: "/documentos/contrato.pdf",
+      mimeType: "application/pdf"
+    },
+    {
+      id: "projetos",
+      name: "Projetos",
+      type: "folder" as const,
+      size: 0,
+      createdAt: new Date("2024-01-16"),
+      modifiedAt: new Date("2024-01-21"),
+      shared: true,
+      favorite: false,
+      path: "/documentos/projetos",
+    }
+  ],
+  '/documentos/projetos': [
+    {
+      id: "proj1",
+      name: "Projeto A",
+      type: "folder" as const,
+      size: 0,
+      createdAt: new Date("2024-01-16"),
+      modifiedAt: new Date("2024-01-21"),
+      shared: true,
+      favorite: false,
+      path: "/documentos/projetos/projeto-a",
+    },
+    {
+      id: "proj2",
+      name: "Relatório.docx",
+      type: "file" as const,
+      size: 1800000,
+      createdAt: new Date("2024-01-18"),
+      modifiedAt: new Date("2024-01-18"),
+      shared: false,
+      favorite: true,
+      path: "/documentos/projetos/relatorio.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    }
+  ],
+  '/downloads': [
+    {
+      id: "down1",
+      name: "video_demo.mp4",
+      type: "file" as const,
+      size: 105600000,
+      createdAt: new Date("2024-01-17"),
+      modifiedAt: new Date("2024-01-17"),
+      shared: false,
+      favorite: false,
+      path: "/downloads/video_demo.mp4",
+      mimeType: "video/mp4"
+    }
+  ]
+};
 
 export default function OneDisk() {
+  const [currentPath, setCurrentPath] = useState('/');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [currentView, setCurrentView] = useState<'files' | 'trash' | 'shared' | 'favorites'>('files');
-  const [currentPath, setCurrentPath] = useState('/');
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileItem[]>(mockFiles);
+  const [shareModalItem, setShareModalItem] = useState<FileItem | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isMobile = useIsMobile();
-  const [shareModal, setShareModal] = useState<{ isOpen: boolean; fileName: string; shareLink: string }>({
-    isOpen: false,
-    fileName: '',
-    shareLink: ''
-  });
+  const [currentView, setCurrentView] = useState<'files' | 'trash' | 'shared' | 'favorites'>('files');
   
-  const [bucketInfo] = useState<BucketInfo>({
-    id: "bucket-1",
-    name: "Meu Bucket",
-    uuid: "b8f3c4e2-9a7d-4e1f-8c6b-2d5a9e7f1b3c",
-    currentPath: currentPath,
-    usedSpace: 45 * 1024 * 1024 * 1024,
-    totalSpace: 100 * 1024 * 1024 * 1024,
-    objectsCount: 1247
-  });
+  const isMobile = useIsMobile();
 
-  // Mock data organizado por diretórios
-  const allFiles: { [path: string]: FileItem[] } = {
-    '/': [
-      {
-        id: "1",
-        name: "Imagens",
-        type: "folder",
-        size: 0,
-        createdAt: new Date("2024-01-15"),
-        modifiedAt: new Date("2024-01-20"),
-        shared: false,
-        favorite: true,
-        path: "/imagens",
-      },
-      {
-        id: "2",
-        name: "Documentos",
-        type: "folder",
-        size: 0,
-        createdAt: new Date("2024-01-16"),
-        modifiedAt: new Date("2024-01-21"),
-        shared: false,
-        favorite: false,
-        path: "/documentos",
-      },
-      {
-        id: "3",
-        name: "Downloads",
-        type: "folder",
-        size: 0,
-        createdAt: new Date("2024-01-17"),
-        modifiedAt: new Date("2024-01-22"),
-        shared: false,
-        favorite: false,
-        path: "/downloads",
-      },
-      {
-        id: "4",
-        name: "Manual.pdf",
-        type: "file",
-        size: 1200000,
-        createdAt: new Date("2024-01-18"),
-        modifiedAt: new Date("2024-01-18"),
-        shared: false,
-        favorite: false,
-        path: "/manual.pdf",
-        mimeType: "application/pdf"
-      }
-    ],
-    '/imagens': [
-      {
-        id: "img1",
-        name: "foto1.jpg",
-        type: "file",
-        size: 850000,
-        createdAt: new Date("2024-01-19"),
-        modifiedAt: new Date("2024-01-19"),
-        shared: true,
-        favorite: false,
-        path: "/imagens/foto1.jpg",
-        mimeType: "image/jpeg"
-      },
-      {
-        id: "img2",
-        name: "screenshot.png",
-        type: "file",
-        size: 450000,
-        createdAt: new Date("2024-01-20"),
-        modifiedAt: new Date("2024-01-20"),
-        shared: false,
-        favorite: true,
-        path: "/imagens/screenshot.png",
-        mimeType: "image/png"
-      }
-    ],
-    '/documentos': [
-      {
-        id: "doc1",
-        name: "Projetos",
-        type: "folder",
-        size: 0,
-        createdAt: new Date("2024-01-16"),
-        modifiedAt: new Date("2024-01-21"),
-        shared: false,
-        favorite: false,
-        path: "/documentos/projetos",
-      },
-      {
-        id: "doc2",
-        name: "Contrato.pdf",
-        type: "file",
-        size: 2560000,
-        createdAt: new Date("2024-01-17"),
-        modifiedAt: new Date("2024-01-17"),
-        shared: false,
-        favorite: false,
-        path: "/documentos/contrato.pdf",
-        mimeType: "application/pdf"
-      }
-    ],
-    '/documentos/projetos': [
-      {
-        id: "proj1",
-        name: "Projeto A",
-        type: "folder",
-        size: 0,
-        createdAt: new Date("2024-01-16"),
-        modifiedAt: new Date("2024-01-21"),
-        shared: true,
-        favorite: false,
-        path: "/documentos/projetos/projeto-a",
-      },
-      {
-        id: "proj2",
-        name: "Relatório.docx",
-        type: "file",
-        size: 1800000,
-        createdAt: new Date("2024-01-18"),
-        modifiedAt: new Date("2024-01-18"),
-        shared: false,
-        favorite: true,
-        path: "/documentos/projetos/relatorio.docx",
-        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      }
-    ],
-    '/downloads': [
-      {
-        id: "down1",
-        name: "video_demo.mp4",
-        type: "file",
-        size: 105600000,
-        createdAt: new Date("2024-01-17"),
-        modifiedAt: new Date("2024-01-17"),
-        shared: false,
-        favorite: false,
-        path: "/downloads/video_demo.mp4",
-        mimeType: "video/mp4"
-      }
-    ]
+  const usedSpace = 2.1 * 1024 * 1024 * 1024; // 2.1 GB
+  const totalSpace = 100 * 1024 * 1024 * 1024; // 100 GB
+  const objectsCount = 145;
+
+  const currentFiles = React.useMemo(() => {
+    if (currentView === 'shared') {
+      return getAllFiles().filter(file => file.shared);
+    }
+    if (currentView === 'favorites') {
+      return getAllFiles().filter(file => file.favorite);
+    }
+    if (currentView === 'trash') {
+      return [];
+    }
+    return mockFolderContents[currentPath as keyof typeof mockFolderContents] || [];
+  }, [currentPath, currentView]);
+
+  const getAllFiles = () => {
+    const allFiles: FileItem[] = [];
+    Object.values(mockFolderContents).forEach(folderFiles => {
+      allFiles.push(...folderFiles);
+    });
+    return allFiles;
   };
 
-  const [trashedFiles, setTrashedFiles] = useState<FileItem[]>([]);
-
-  const handleFileClick = (file: FileItem) => {
-    if (file.type === 'folder') {
-      setCurrentPath(file.path);
-      setSelectedItems([]);
-      console.log("Navigate to folder:", file.name);
-    } else {
-      console.log("Open file:", file.name);
+  const handleNavigateToFolder = (item: FileItem) => {
+    if (item.type === 'folder') {
+      console.log("Navigate to:", item.path);
+      setCurrentPath(item.path);
+      setCurrentView('files');
     }
   };
 
-  const handleNavigateToFolder = (folder: FileItem) => {
-    if (folder.type === 'folder') {
-      setCurrentPath(folder.path);
-      setSelectedItems([]);
-      console.log("Navigate into folder:", folder.name);
-    }
-  };
-
-  const handleFavoriteToggle = (fileId: string) => {
-    const currentFiles = getCurrentFiles();
-    const targetFile = currentFiles.find(f => f.id === fileId);
-    
-    if (targetFile) {
-      // Atualizar no allFiles
-      const filesInPath = allFiles[currentPath] || [];
-      const updatedFiles = filesInPath.map(file => 
-        file.id === fileId ? { ...file, favorite: !file.favorite } : file
-      );
-      allFiles[currentPath] = updatedFiles;
-      
-      // Forçar re-render
-      setSelectedItems([...selectedItems]);
-    }
-  };
-
-  const handleShareClick = (fileId: string) => {
-    const currentFiles = getCurrentFiles();
-    const file = currentFiles.find(f => f.id === fileId);
-    
-    if (file) {
-      const shareLink = `https://onedisk.example.com/share/${file.id}`;
-      
-      setShareModal({
-        isOpen: true,
-        fileName: file.name,
-        shareLink: shareLink
-      });
-      
-      // Marcar como compartilhado
-      const filesInPath = allFiles[currentPath] || [];
-      const updatedFiles = filesInPath.map(f => 
-        f.id === fileId ? { ...f, shared: true } : f
-      );
-      allFiles[currentPath] = updatedFiles;
-      
-      // Forçar re-render
-      setSelectedItems([...selectedItems]);
-    }
+  const handleNavigate = (path: string) => {
+    console.log("Navigate to:", path);
+    setCurrentPath(path);
+    setCurrentView('files');
   };
 
   const handleCreateFolder = () => {
-    if (currentView !== 'files') return;
-    
+    console.log("Nova pasta criada");
     const newFolder: FileItem = {
-      id: `folder-${Date.now()}`,
+      id: `folder_${Date.now()}`,
       name: "",
       type: "folder",
       size: 0,
@@ -246,347 +330,142 @@ export default function OneDisk() {
       modifiedAt: new Date(),
       shared: false,
       favorite: false,
-      path: `${currentPath === '/' ? '' : currentPath}/nova-pasta`,
+      path: `${currentPath}/nova-pasta`,
     };
     
-    const currentFiles = allFiles[currentPath] || [];
-    allFiles[currentPath] = [newFolder, ...currentFiles];
+    setFiles(prev => [...prev, newFolder]);
     setEditingFolderId(newFolder.id);
-    console.log("Nova pasta criada");
   };
 
-  const handleFolderRename = (itemId: string, newName: string) => {
-    const currentFiles = allFiles[currentPath] || [];
-    
-    if (newName.trim()) {
-      const updatedFiles = currentFiles.map(file => 
-        file.id === itemId ? { ...file, name: newName.trim() } : file
-      );
-      allFiles[currentPath] = updatedFiles;
+  const handleFolderRename = (folderId: string, newName: string) => {
+    if (newName.trim() === '') {
+      // Remove folder if name is empty
+      setFiles(prev => prev.filter(f => f.id !== folderId));
     } else {
-      allFiles[currentPath] = currentFiles.filter(file => file.id !== itemId);
+      // Update folder name
+      setFiles(prev => prev.map(f => 
+        f.id === folderId 
+          ? { ...f, name: newName.trim() }
+          : f
+      ));
     }
     setEditingFolderId(null);
   };
 
-  const handleReload = () => {
-    console.log("Recarregando diretório atual:", currentPath);
-    setSelectedItems([]);
-    // Aqui você implementaria a lógica real de recarregamento da API
-    // Por enquanto apenas limpa a seleção
+  const handleFileClick = (file: FileItem) => {
+    if (file.type === 'folder') {
+      handleNavigateToFolder(file);
+    }
   };
 
   const handleItemSelect = (item: FileItem) => {
-    setSelectedItems(prev => {
-      if (prev.includes(item.id)) {
-        return prev.filter(id => id !== item.id);
-      } else {
-        return [...prev, item.id];
-      }
-    });
+    setSelectedItems(prev => 
+      prev.includes(item.id) 
+        ? prev.filter(id => id !== item.id)
+        : [...prev, item.id]
+    );
   };
 
-  const handleSelectAll = (selected: boolean) => {
-    const currentFiles = getCurrentFiles();
-    setSelectedItems(selected ? currentFiles.map(file => file.id) : []);
+  const handleFavoriteToggle = (fileId: string) => {
+    setFiles(prev => prev.map(f => 
+      f.id === fileId 
+        ? { ...f, favorite: !f.favorite }
+        : f
+    ));
   };
 
-  const handleDeleteSelected = () => {
-    if (selectedItems.length === 0) return;
-    
-    const currentFiles = getCurrentFiles();
-    const selectedFiles = currentFiles.filter(file => selectedItems.includes(file.id));
-    
-    if (currentView === 'trash') {
-      setTrashedFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
-      console.log("Itens excluídos permanentemente:", selectedItems);
-    } else {
-      setTrashedFiles(prev => [...prev, ...selectedFiles]);
-      
-      if (currentView === 'files') {
-        const remainingFiles = currentFiles.filter(file => !selectedItems.includes(file.id));
-        allFiles[currentPath] = remainingFiles;
-      }
-      
-      console.log("Itens movidos para lixeira:", selectedItems);
+  const handleShareClick = (fileId: string) => {
+    const file = files.find(f => f.id === fileId);
+    if (file) {
+      setShareModalItem(file);
     }
-    
-    setSelectedItems([]);
   };
 
-  const handleRestoreSelected = () => {
-    if (currentView !== 'trash' || selectedItems.length === 0) return;
-    
-    const selectedFiles = trashedFiles.filter(file => selectedItems.includes(file.id));
-    
-    // Restaurar para o diretório raiz por simplicidade
-    const rootFiles = allFiles['/'] || [];
-    allFiles['/'] = [...rootFiles, ...selectedFiles];
-    
-    setTrashedFiles(prev => prev.filter(file => !selectedItems.includes(file.id)));
-    setSelectedItems([]);
-    console.log("Itens restaurados:", selectedItems);
-  };
-
-  const handleEmptyTrash = () => {
-    setTrashedFiles([]);
-    setSelectedItems([]);
-    console.log("Lixeira esvaziada");
-  };
-
-  const handleZipSelected = () => {
-    console.log("Criando ZIP dos itens:", selectedItems);
-  };
-
-  const handleClearSelection = () => {
-    setSelectedItems([]);
-  };
-
-  const handlePathClick = (path: string) => {
-    setCurrentPath(path);
-    setSelectedItems([]);
-    console.log("Navigate to path:", path);
+  const handleReload = () => {
+    console.log("Recarregando diretório atual:", currentPath);
+    // Simulate reload by updating modified date
+    setFiles(prev => prev.map(f => ({ ...f, modifiedAt: new Date() })));
   };
 
   const handleTrashClick = () => {
     setCurrentView('trash');
-    setSelectedItems([]);
     console.log("Mostrando lixeira");
   };
 
   const handleSharedClick = () => {
     setCurrentView('shared');
-    setSelectedItems([]);
     console.log("Mostrando compartilhados");
   };
 
   const handleFavoritesClick = () => {
     setCurrentView('favorites');
-    setSelectedItems([]);
     console.log("Mostrando favoritos");
   };
 
   const handleBackToFiles = () => {
     setCurrentView('files');
-    setSelectedItems([]);
     console.log("Voltando aos arquivos");
   };
 
-  const handleNavigate = (path: string) => {
-    setCurrentPath(path);
-    setCurrentView('files');
-    setSelectedItems([]);
-    console.log("Navigate to:", path);
-  };
-
-  const handleRemoveSharing = () => {
-    if (currentView !== 'shared' || selectedItems.length === 0) return;
-    
-    // Atualizar em todos os diretórios
-    Object.keys(allFiles).forEach(path => {
-      allFiles[path] = allFiles[path].map(file => 
-        selectedItems.includes(file.id) ? { ...file, shared: false } : file
-      );
-    });
-    
-    setSelectedItems([]);
-    console.log("Compartilhamento removido:", selectedItems);
-  };
-
-  const handleRemoveFavorites = () => {
-    if (currentView !== 'favorites' || selectedItems.length === 0) return;
-    
-    // Atualizar em todos os diretórios
-    Object.keys(allFiles).forEach(path => {
-      allFiles[path] = allFiles[path].map(file => 
-        selectedItems.includes(file.id) ? { ...file, favorite: false } : file
-      );
-    });
-    
-    setSelectedItems([]);
-    console.log("Removido dos favoritos:", selectedItems);
-  };
-
-  const getCurrentFiles = () => {
-    switch (currentView) {
-      case 'trash':
-        return trashedFiles;
-      case 'shared':
-        // Retornar todos os arquivos compartilhados de todos os diretórios
-        return Object.values(allFiles).flat().filter(file => file.shared);
-      case 'favorites':
-        // Retornar todos os arquivos favoritos de todos os diretórios
-        return Object.values(allFiles).flat().filter(file => file.favorite);
-      default:
-        return allFiles[currentPath] || [];
-    }
-  };
-
-  const getViewTitle = () => {
-    switch (currentView) {
-      case 'trash':
-        return "Lixeira";
-      case 'shared':
-        return "Arquivos Compartilhados";
-      case 'favorites':
-        return "Arquivos Favoritos";
-      default:
-        return bucketInfo.name;
-    }
-  };
-
-  const getCurrentPath = () => {
-    switch (currentView) {
-      case 'trash':
-        return "/lixeira";
-      case 'shared':
-        return "/compartilhados";
-      case 'favorites':
-        return "/favoritos";
-      default:
-        return currentPath;
-    }
-  };
-
-  const currentFiles = getCurrentFiles();
-  const isEmpty = currentFiles.length === 0;
-
-  const renderEmptyState = () => {
-    switch (currentView) {
-      case 'trash':
-        return (
-          <div className="text-center space-y-4">
-            <div className="text-6xl opacity-20">🗑️</div>
-            <h3 className="text-lg font-medium">Lixeira vazia</h3>
-            <p className="text-muted-foreground">
-              Não há itens na lixeira no momento.
-            </p>
-          </div>
-        );
-      case 'shared':
-        return (
-          <div className="text-center space-y-4">
-            <div className="text-6xl opacity-20">📤</div>
-            <h3 className="text-lg font-medium">Nenhum arquivo compartilhado</h3>
-            <p className="text-muted-foreground">
-              Você ainda não compartilhou nenhum arquivo.
-            </p>
-          </div>
-        );
-      case 'favorites':
-        return (
-          <div className="text-center space-y-4">
-            <div className="text-6xl opacity-20">❤️</div>
-            <h3 className="text-lg font-medium">Nenhum arquivo favorito</h3>
-            <p className="text-muted-foreground">
-              Adicione arquivos aos favoritos para vê-los aqui.
-            </p>
-          </div>
-        );
-      default:
-        return (
-          <div className="text-center space-y-4">
-            <div className="text-6xl opacity-20">📁</div>
-            <h3 className="text-lg font-medium">Diretório vazio</h3>
-            <p className="text-muted-foreground">
-              Este diretório não contém nenhum arquivo ou pasta.
-            </p>
-          </div>
-        );
-    }
-  };
-
   return (
-    <div className="h-full flex flex-col">
-      <OneDiskToolbar
-        bucketName={getViewTitle()}
-        viewMode={viewMode}
-        isInTrash={currentView === 'trash'}
-        isInShared={currentView === 'shared'}
-        isInFavorites={currentView === 'favorites'}
-        onNavigateHome={handleBackToFiles}
-        onNavigateBack={() => {
-          const pathParts = currentPath.split('/').filter(Boolean);
-          if (pathParts.length > 0) {
-            pathParts.pop();
-            const newPath = '/' + pathParts.join('/');
-            setCurrentPath(newPath === '/' ? '/' : newPath);
-          }
-        }}
-        onNavigateForward={() => console.log("Navigate forward")}
-        onReload={handleReload}
-        onCreateFolder={handleCreateFolder}
-        onDelete={() => console.log("Delete")}
-        onShare={() => console.log("Share")}
-        onInfo={() => console.log("Info")}
-        onViewModeChange={setViewMode}
-        onMenuClick={() => setSidebarOpen(true)}
+    <div className="h-screen flex overflow-hidden">
+      <OneDiskSidebar
+        usedSpace={usedSpace}
+        totalSpace={totalSpace}
+        objectsCount={objectsCount}
+        currentPath={currentPath}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onTrashClick={handleTrashClick}
+        onSharedClick={handleSharedClick}
+        onFavoritesClick={handleFavoritesClick}
+        onNavigate={handleNavigate}
       />
-      
-      <div className="flex flex-1 overflow-hidden">
-        <OneDiskSidebar
-          usedSpace={bucketInfo.usedSpace}
-          totalSpace={bucketInfo.totalSpace}
-          objectsCount={bucketInfo.objectsCount}
-          currentPath={getCurrentPath()}
-          isOpen={isMobile ? sidebarOpen : true}
-          onClose={() => setSidebarOpen(false)}
-          onTrashClick={handleTrashClick}
-          onSharedClick={handleSharedClick}
-          onFavoritesClick={handleFavoritesClick}
-          onNavigate={handleNavigate}
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <OneDiskToolbar
+          bucketName="Meu Bucket"
+          viewMode={viewMode}
+          isInTrash={currentView === 'trash'}
+          isInShared={currentView === 'shared'}
+          isInFavorites={currentView === 'favorites'}
+          onNavigateHome={() => handleNavigate('/')}
+          onNavigateBack={() => console.log("Voltar")}
+          onNavigateForward={() => console.log("Avançar")}
+          onReload={handleReload}
+          onCreateFolder={handleCreateFolder}
+          onDelete={() => console.log("Delete")}
+          onShare={() => console.log("Share")}
+          onInfo={() => console.log("Info")}
+          onViewModeChange={setViewMode}
+          onMenuClick={() => setSidebarOpen(true)}
         />
-        
-        <div className="flex-1 flex flex-col min-w-0">
-          {isEmpty ? (
-            <div className="flex-1 flex items-center justify-center">
-              {renderEmptyState()}
-            </div>
-          ) : (
-            <OneDiskFileArea
-              files={currentFiles}
-              viewMode={viewMode}
-              selectedItems={selectedItems}
-              editingFolderId={editingFolderId}
-              isInTrash={currentView === 'trash'}
-              isInShared={currentView === 'shared'}
-              isInFavorites={currentView === 'favorites'}
-              onFileClick={handleFileClick}
-              onFavoriteToggle={handleFavoriteToggle}
-              onShareClick={handleShareClick}
-              onItemSelect={handleItemSelect}
-              onSelectAll={handleSelectAll}
-              onFolderRename={handleFolderRename}
-              onNavigateToFolder={handleNavigateToFolder}
-            />
-          )}
-          
-          <OneDiskFooter
-            currentPath={getCurrentPath()}
-            bucketUuid={bucketInfo.uuid}
-            bucketName={bucketInfo.name}
-            selectedItems={selectedItems}
-            isInTrash={currentView === 'trash'}
-            isInShared={currentView === 'shared'}
-            isInFavorites={currentView === 'favorites'}
-            onPathClick={handlePathClick}
-            onDeleteSelected={handleDeleteSelected}
-            onRestoreSelected={handleRestoreSelected}
-            onEmptyTrash={trashedFiles.length > 0 ? handleEmptyTrash : undefined}
-            onZipSelected={handleZipSelected}
-            onClearSelection={handleClearSelection}
-            onRemoveSharing={handleRemoveSharing}
-            onRemoveFavorites={handleRemoveFavorites}
-          />
-        </div>
+
+        <OneDiskFileArea
+          files={currentFiles}
+          viewMode={viewMode}
+          selectedItems={selectedItems}
+          editingFolderId={editingFolderId}
+          isInTrash={currentView === 'trash'}
+          isInShared={currentView === 'shared'}
+          isInFavorites={currentView === 'favorites'}
+          onFileClick={handleFileClick}
+          onFavoriteToggle={handleFavoriteToggle}
+          onShareClick={handleShareClick}
+          onItemSelect={handleItemSelect}
+          onSelectAll={() => {}}
+          onFolderRename={handleFolderRename}
+          onNavigateToFolder={handleNavigateToFolder}
+        />
       </div>
 
-      <OneDiskShareModal
-        isOpen={shareModal.isOpen}
-        onClose={() => setShareModal(prev => ({ ...prev, isOpen: false }))}
-        fileName={shareModal.fileName}
-        shareLink={shareModal.shareLink}
-      />
+      {shareModalItem && (
+        <OneDiskShareModal
+          item={shareModalItem}
+          isOpen={!!shareModalItem}
+          onClose={() => setShareModalItem(null)}
+        />
+      )}
     </div>
   );
 }
