@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { OneDiskSidebar } from '../components/OneDiskSidebar';
 import { OneDiskToolbar } from '../components/OneDiskToolbar';
@@ -175,7 +176,7 @@ const mockFiles: FileItem[] = [
   }
 ];
 
-const mockFolderContents = {
+let mockFolderContents = {
   '/': mockFiles,
   '/imagens': [
     {
@@ -274,7 +275,6 @@ export default function OneDisk() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
-  const [files, setFiles] = useState<FileItem[]>(mockFiles);
   const [shareModalItem, setShareModalItem] = useState<FileItem | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'files' | 'trash' | 'shared' | 'favorites'>('files');
@@ -321,7 +321,7 @@ export default function OneDisk() {
   };
 
   const handleCreateFolder = () => {
-    console.log("Nova pasta criada");
+    console.log("Nova pasta criada no path:", currentPath);
     const newFolder: FileItem = {
       id: `folder_${Date.now()}`,
       name: "",
@@ -331,24 +331,42 @@ export default function OneDisk() {
       modifiedAt: new Date(),
       shared: false,
       favorite: false,
-      path: `${currentPath}/nova-pasta`,
+      path: `${currentPath === '/' ? '' : currentPath}/nova-pasta`,
     };
     
-    setFiles(prev => [...prev, newFolder]);
+    // Adicionar a nova pasta ao diretório atual
+    if (!mockFolderContents[currentPath as keyof typeof mockFolderContents]) {
+      mockFolderContents[currentPath as keyof typeof mockFolderContents] = [];
+    }
+    
+    mockFolderContents[currentPath as keyof typeof mockFolderContents].push(newFolder);
     setEditingFolderId(newFolder.id);
   };
 
   const handleFolderRename = (folderId: string, newName: string) => {
+    console.log("Renomeando pasta:", folderId, "para:", newName);
+    
     if (newName.trim() === '') {
       // Remove folder if name is empty
-      setFiles(prev => prev.filter(f => f.id !== folderId));
+      const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+      if (currentFolderFiles) {
+        const index = currentFolderFiles.findIndex(f => f.id === folderId);
+        if (index > -1) {
+          currentFolderFiles.splice(index, 1);
+        }
+      }
     } else {
       // Update folder name
-      setFiles(prev => prev.map(f => 
-        f.id === folderId 
-          ? { ...f, name: newName.trim() }
-          : f
-      ));
+      const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+      if (currentFolderFiles) {
+        const folderIndex = currentFolderFiles.findIndex(f => f.id === folderId);
+        if (folderIndex > -1) {
+          currentFolderFiles[folderIndex] = {
+            ...currentFolderFiles[folderIndex],
+            name: newName.trim()
+          };
+        }
+      }
     }
     setEditingFolderId(null);
   };
@@ -368,15 +386,23 @@ export default function OneDisk() {
   };
 
   const handleFavoriteToggle = (fileId: string) => {
-    setFiles(prev => prev.map(f => 
-      f.id === fileId 
-        ? { ...f, favorite: !f.favorite }
-        : f
-    ));
+    console.log("Toggling favorite for:", fileId);
+    // Procurar e atualizar em todos os diretórios
+    Object.keys(mockFolderContents).forEach(path => {
+      const files = mockFolderContents[path as keyof typeof mockFolderContents];
+      const fileIndex = files.findIndex(f => f.id === fileId);
+      if (fileIndex > -1) {
+        files[fileIndex] = {
+          ...files[fileIndex],
+          favorite: !files[fileIndex].favorite
+        };
+      }
+    });
   };
 
   const handleShareClick = (fileId: string) => {
-    const file = files.find(f => f.id === fileId);
+    console.log("Sharing file:", fileId);
+    const file = getAllFiles().find(f => f.id === fileId);
     if (file) {
       setShareModalItem(file);
     }
@@ -385,7 +411,12 @@ export default function OneDisk() {
   const handleReload = () => {
     console.log("Recarregando diretório atual:", currentPath);
     // Simulate reload by updating modified date
-    setFiles(prev => prev.map(f => ({ ...f, modifiedAt: new Date() })));
+    const currentFolderFiles = mockFolderContents[currentPath as keyof typeof mockFolderContents];
+    if (currentFolderFiles) {
+      currentFolderFiles.forEach(file => {
+        file.modifiedAt = new Date();
+      });
+    }
   };
 
   const handleTrashClick = () => {
