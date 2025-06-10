@@ -78,76 +78,78 @@ export function OneDiskSidebar({
         
         {/* Mobile sidebar */}
         <div className={cn(
-          "fixed left-0 top-0 h-full w-80 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-300 lg:hidden flex flex-col",
+          "fixed left-0 top-0 h-full w-80 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-300 lg:hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}>
-          {/* Header with close button */}
-          <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-            <h2 className="text-lg font-semibold text-sidebar-foreground">OneDisk</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <div className="flex flex-col h-full">
+            {/* Header with close button */}
+            <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+              <h2 className="text-lg font-semibold text-sidebar-foreground">OneDisk</h2>
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
 
-          {/* Navigation */}
-          <div className="p-4 space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={handleTreeClick}
-            >
-              <FolderTree size={16} className="mr-3" />
-              Árvore de Arquivos
-            </Button>
-            
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={handleTrashClick}
-            >
-              <Trash2 size={16} className="mr-3" />
-              Lixeira
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={handleSharedClick}
-            >
-              <Share size={16} className="mr-3" />
-              Compartilhados
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-              onClick={handleFavoritesClick}
-            >
-              <Heart size={16} className="mr-3" />
-              Favoritos
-            </Button>
-          </div>
-
-          {/* Content Area - flex-1 to take remaining space */}
-          <div className="flex-1 overflow-y-auto border-t border-sidebar-border min-h-0">
-            <OneDiskFileTreeSidebar 
-              onNavigate={handleNavigate}
-              currentPath={currentPath}
-            />
-          </div>
-
-          {/* Storage info - Fixed at bottom */}
-          <div className="p-4 border-t border-sidebar-border">
-            <div className="bg-sidebar-accent p-4 rounded-lg">
-              <div className="mb-3">
-                <div className="flex justify-between text-sm text-sidebar-foreground mb-2">
-                  <span>Espaço usado</span>
-                  <span>{usedGB} GB de {totalGB} GB</span>
-                </div>
-                <Progress value={usedPercentage} className="h-2" />
-              </div>
+            {/* Navigation */}
+            <div className="p-4 space-y-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={handleTreeClick}
+              >
+                <FolderTree size={16} className="mr-3" />
+                Árvore de Arquivos
+              </Button>
               
-              <div className="text-xs text-sidebar-foreground/60 space-y-1">
-                <div>Objetos: {objectsCount.toLocaleString()}</div>
-                <div>{usedPercentage.toFixed(1)}% utilizado</div>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={handleTrashClick}
+              >
+                <Trash2 size={16} className="mr-3" />
+                Lixeira
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={handleSharedClick}
+              >
+                <Share size={16} className="mr-3" />
+                Compartilhados
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+                onClick={handleFavoritesClick}
+              >
+                <Heart size={16} className="mr-3" />
+                Favoritos
+              </Button>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto border-t border-sidebar-border">
+              <OneDiskFileTreeSidebar 
+                onNavigate={handleNavigate}
+                currentPath={currentPath}
+              />
+            </div>
+
+            {/* Storage info */}
+            <div className="p-4 border-t border-sidebar-border">
+              <div className="bg-sidebar-accent p-4 rounded-lg">
+                <div className="mb-3">
+                  <div className="flex justify-between text-sm text-sidebar-foreground mb-2">
+                    <span>Espaço usado</span>
+                    <span>{usedGB} GB de {totalGB} GB</span>
+                  </div>
+                  <Progress value={usedPercentage} className="h-2" />
+                </div>
+                
+                <div className="text-xs text-sidebar-foreground/60 space-y-1">
+                  <div>Objetos: {objectsCount.toLocaleString()}</div>
+                  <div>{usedPercentage.toFixed(1)}% utilizado</div>
+                </div>
               </div>
             </div>
           </div>
@@ -156,7 +158,7 @@ export function OneDiskSidebar({
     );
   }
 
-  // Desktop sidebar - also use flex layout
+  // Desktop sidebar
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border h-full flex flex-col">
       {/* Navigation */}
@@ -196,8 +198,8 @@ export function OneDiskSidebar({
         </Button>
       </div>
 
-      {/* Content Area - flex-1 to take remaining space */}
-      <div className="flex-1 overflow-y-auto border-t border-sidebar-border min-h-0">
+      {/* Content Area - Only File Tree */}
+      <div className="flex-1 overflow-y-auto border-t border-sidebar-border">
         <OneDiskFileTreeSidebar 
           onNavigate={onNavigate}
           currentPath={currentPath}
