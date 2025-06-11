@@ -4,12 +4,18 @@ import { OneBoardToolbar } from '../components/OneBoardToolbar';
 import { OneBoardGrid } from '../components/OneBoardGrid';
 import { OneBoardCanvas } from '../components/OneBoardCanvas';
 import { CreateBoardModal } from '../components/CreateBoardModal';
+import { EditBoardModal } from '../components/EditBoardModal';
+import { ShareBoardModal } from '../components/ShareBoardModal';
 import { Board } from '../config';
 
 export default function OneBoard() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [activeBoard, setActiveBoard] = useState<Board | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [editingBoard, setEditingBoard] = useState<Board | null>(null);
+  const [sharingBoard, setSharingBoard] = useState<Board | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'canvas'>('grid');
 
   const handleCreateBoard = (name: string, description: string) => {
@@ -29,23 +35,47 @@ export default function OneBoard() {
     setIsCreateModalOpen(false);
   };
 
+  const handleEditBoard = (name: string, description: string) => {
+    if (editingBoard) {
+      setBoards(prev => prev.map(board => 
+        board.id === editingBoard.id 
+          ? { ...board, name, description, updatedAt: new Date().toISOString() }
+          : board
+      ));
+      
+      if (activeBoard && activeBoard.id === editingBoard.id) {
+        setActiveBoard({ ...activeBoard, name, description, updatedAt: new Date().toISOString() });
+      }
+    }
+    setEditingBoard(null);
+    setIsEditModalOpen(false);
+  };
+
   const handleBoardAction = (boardId: string, action: string) => {
+    const board = boards.find(b => b.id === boardId);
+    
     switch (action) {
       case 'view':
-        const board = boards.find(b => b.id === boardId);
         if (board) {
           setActiveBoard(board);
           setViewMode('canvas');
         }
         break;
       case 'edit':
-        // TODO: Implement edit modal
-        console.log('Edit board:', boardId);
+        if (board) {
+          setEditingBoard(board);
+          setIsEditModalOpen(true);
+        }
         break;
       case 'share':
-        setBoards(prev => prev.map(b => 
-          b.id === boardId ? { ...b, isShared: !b.isShared } : b
-        ));
+        if (board) {
+          setSharingBoard(board);
+          setIsShareModalOpen(true);
+          // Also toggle shared status
+          setBoards(prev => prev.map(b => 
+            b.id === boardId ? { ...b, isShared: !b.isShared } : b
+          ));
+        }
         break;
       case 'toggle-active':
         setBoards(prev => prev.map(b => 
@@ -54,6 +84,10 @@ export default function OneBoard() {
         break;
       case 'delete':
         setBoards(prev => prev.filter(b => b.id !== boardId));
+        if (activeBoard && activeBoard.id === boardId) {
+          setActiveBoard(null);
+          setViewMode('grid');
+        }
         break;
     }
   };
@@ -61,6 +95,11 @@ export default function OneBoard() {
   const handleBackToGrid = () => {
     setActiveBoard(null);
     setViewMode('grid');
+  };
+
+  const handleCreateStage = () => {
+    console.log('Criar novo stage');
+    // TODO: Implement stage creation
   };
 
   return (
@@ -71,6 +110,7 @@ export default function OneBoard() {
         viewMode={viewMode}
         activeBoard={activeBoard}
         onBackToGrid={handleBackToGrid}
+        onCreateStage={activeBoard ? handleCreateStage : undefined}
       />
 
       <div className="flex-1 overflow-hidden">
@@ -96,6 +136,25 @@ export default function OneBoard() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateBoard}
+      />
+
+      <EditBoardModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingBoard(null);
+        }}
+        onSubmit={handleEditBoard}
+        board={editingBoard}
+      />
+
+      <ShareBoardModal
+        isOpen={isShareModalOpen}
+        onClose={() => {
+          setIsShareModalOpen(false);
+          setSharingBoard(null);
+        }}
+        board={sharingBoard}
       />
     </div>
   );

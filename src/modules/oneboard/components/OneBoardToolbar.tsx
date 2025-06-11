@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft, Grid, Kanban } from 'lucide-react';
+import { Plus, ArrowLeft, Grid, Kanban, Columns } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardToolbarProps {
@@ -10,6 +10,7 @@ interface OneBoardToolbarProps {
   viewMode: 'grid' | 'canvas';
   activeBoard: Board | null;
   onBackToGrid: () => void;
+  onCreateStage?: () => void;
 }
 
 export function OneBoardToolbar({
@@ -17,7 +18,8 @@ export function OneBoardToolbar({
   onViewModeChange,
   viewMode,
   activeBoard,
-  onBackToGrid
+  onBackToGrid,
+  onCreateStage
 }: OneBoardToolbarProps) {
   return (
     <div className="border-b border-border bg-background p-4">
@@ -74,6 +76,13 @@ export function OneBoardToolbar({
                 Novo Board
               </Button>
             </>
+          )}
+
+          {activeBoard && onCreateStage && (
+            <Button onClick={onCreateStage} className="flex items-center gap-2">
+              <Columns className="h-4 w-4" />
+              Novo Stage
+            </Button>
           )}
         </div>
       </div>
