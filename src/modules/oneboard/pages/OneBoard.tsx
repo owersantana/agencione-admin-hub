@@ -23,7 +23,7 @@ export default function OneBoard() {
       id: crypto.randomUUID(),
       name,
       description,
-      columnsCount: 3, // Default: To Do, In Progress, Done
+      columnsCount: 0, // Start with 0 columns
       isActive: true,
       isShared: false,
       createdAt: new Date().toISOString(),
@@ -71,7 +71,6 @@ export default function OneBoard() {
         if (board) {
           setSharingBoard(board);
           setIsShareModalOpen(true);
-          // Also toggle shared status
           setBoards(prev => prev.map(b => 
             b.id === boardId ? { ...b, isShared: !b.isShared } : b
           ));
@@ -97,11 +96,6 @@ export default function OneBoard() {
     setViewMode('grid');
   };
 
-  const handleCreateStage = () => {
-    console.log('Criar novo stage');
-    // TODO: Implement stage creation
-  };
-
   return (
     <div className="h-full flex flex-col">
       <OneBoardToolbar
@@ -110,7 +104,6 @@ export default function OneBoard() {
         viewMode={viewMode}
         activeBoard={activeBoard}
         onBackToGrid={handleBackToGrid}
-        onCreateStage={activeBoard ? handleCreateStage : undefined}
       />
 
       <div className="flex-1 overflow-hidden">

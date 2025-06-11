@@ -3,27 +3,229 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Plus, Trash2, Edit, MoreHorizontal } from 'lucide-react';
 import { BoardColumn, BoardCard } from '../config';
+import { CardDetailModal } from './CardDetailModal';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface OneBoardColumnProps {
   column: BoardColumn;
   onUpdateColumn: (columnId: string, updates: Partial<BoardColumn>) => void;
   onDeleteColumn: (columnId: string) => void;
   onAddCard: (columnId: string, title: string) => void;
-  onMoveCard: (cardId: string, fromColumnId: string, toColumnId: string, newPosition: number) => void;
+  onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
+  onDeleteCard: (cardId: string) => void;
+}
+
+function SortableCard({ card, onUpdateCard, onDeleteCard }: {
+  card: BoardCard;
+  onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
+  onDeleteCard: (cardId: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(card.title);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: card.id,
+    data: {
+      type: 'card',
+      card,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleTitleSubmit = () => {
+    if (editTitle.trim() && editTitle !== card.title) {
+      onUpdateCard(card.id, { title: editTitle.trim() });
+    }
+    setIsEditing(false);
+  };
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSingleClick = () => {
+    if (!isEditing) {
+      setIsDetailModalOpen(true);
+    }
+  };
+
+  const getPriorityColor = (priority?: 'low' | 'medium' | 'high') => {
+    switch (priority) {
+      case 'high': return 'destructive';
+      case 'medium': return 'default';
+      case 'low': return 'secondary';
+      default: return 'outline';
+    }
+  };
+
+  return (
+    <>
+      <Card 
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="p-2 sm:p-3 cursor-pointer hover:shadow-sm"
+      >
+        <div className="space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            {isEditing ? (
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onBlur={handleTitleSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleTitleSubmit();
+                  if (e.key === 'Escape') {
+                    setEditTitle(card.title);
+                    setIsEditing(false);
+                  }
+                }}
+                className="text-sm font-medium"
+                autoFocus
+              />
+            ) : (
+              <h4 
+                className="text-sm font-medium line-clamp-2 flex-1"
+                onDoubleClick={handleDoubleClick}
+                onClick={handleSingleClick}
+              >
+                {card.title}
+              </h4>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                  <Edit className="h-3 w-3 mr-2" />
+                  Editar título
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsDetailModalOpen(true)}>
+                  <Edit className="h-3 w-3 mr-2" />
+                  Ver detalhes
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onDeleteCard(card.id)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-3 w-3 mr-2" />
+                  Excluir
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          
+          {card.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {card.description}
+            </p>
+          )}
+          
+          <div className="flex items-center justify-between">
+            {card.priority && (
+              <Badge variant={getPriorityColor(card.priority)} className="text-xs">
+                {card.priority === 'high' && 'Alta'}
+                {card.priority === 'medium' && 'Média'}
+                {card.priority === 'low' && 'Baixa'}
+              </Badge>
+            )}
+            
+            {card.tags && card.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {card.tags.slice(0, 2).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {card.tags.length > 2 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{card.tags.length - 2}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      <CardDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        card={card}
+        onUpdateCard={onUpdateCard}
+      />
+    </>
+  );
 }
 
 export function OneBoardColumn({
   column,
   onUpdateColumn,
   onDeleteColumn,
-  onAddCard
+  onAddCard,
+  onUpdateCard,
+  onDeleteCard
 }: OneBoardColumnProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(column.title);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState('');
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: column.id,
+    data: {
+      type: 'column',
+      column,
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const handleTitleSubmit = () => {
     if (titleValue.trim()) {
@@ -41,9 +243,14 @@ export function OneBoardColumn({
   };
 
   return (
-    <div className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80">
+    <div 
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80"
+    >
       <Card className="h-full flex flex-col">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3" {...listeners}>
           <div className="flex items-center justify-between">
             {isEditingTitle ? (
               <Input
@@ -95,30 +302,16 @@ export function OneBoardColumn({
         </CardHeader>
 
         <CardContent className="flex-1 space-y-2 overflow-y-auto">
-          {column.cards.map((card) => (
-            <Card key={card.id} className="p-2 sm:p-3 cursor-pointer hover:shadow-sm">
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium line-clamp-2">{card.title}</h4>
-                {card.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {card.description}
-                  </p>
-                )}
-                {card.tags && card.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {card.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Card>
-          ))}
+          <SortableContext items={column.cards.map(card => card.id)} strategy={verticalListSortingStrategy}>
+            {column.cards.map((card) => (
+              <SortableCard
+                key={card.id}
+                card={card}
+                onUpdateCard={onUpdateCard}
+                onDeleteCard={onDeleteCard}
+              />
+            ))}
+          </SortableContext>
 
           {isAddingCard ? (
             <div className="space-y-2">
