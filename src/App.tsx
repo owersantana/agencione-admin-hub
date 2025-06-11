@@ -19,7 +19,6 @@ import NotFound from "./pages/NotFound";
 // Module pages
 import OneDisk from "./modules/onedisk/pages/OneDisk";
 import OneBoard from "./modules/oneboard/pages/OneBoard";
-import Kanban from "./modules/kanban/pages/Kanban";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +49,6 @@ const App = () => (
             <Route path="vendas" element={<div className="p-6">Página de Vendas em desenvolvimento</div>} />
             <Route path="onedisk" element={<OneDisk />} />
             <Route path="oneboard" element={<OneBoard />} />
-            <Route path="kanban/:contexto/:id" element={<Kanban />} />
           </Route>
           
           {/* Catch-all route */}

@@ -17,13 +17,13 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200">
+    <Card className="group hover:shadow-lg transition-shadow duration-200 h-fit">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-lg font-semibold line-clamp-2">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-base sm:text-lg font-semibold line-clamp-2 flex-1 min-w-0">
             {board.name}
           </CardTitle>
-          <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row gap-1 flex-shrink-0">
             {board.isShared && (
               <Badge variant="secondary" className="text-xs">
                 Compartilhado
@@ -46,20 +46,22 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
         
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{board.columnsCount} colunas</span>
-          <span>Criado em {formatDate(board.createdAt)}</span>
+          <span className="hidden sm:inline">Criado em {formatDate(board.createdAt)}</span>
+          <span className="sm:hidden">
+            {formatDate(board.createdAt).split('/').slice(0, 2).join('/')}
+          </span>
         </div>
       </CardContent>
 
       <CardFooter className="pt-3 border-t border-border">
-        <div className="flex items-center gap-1 w-full">
+        <div className="flex items-center justify-center gap-1 w-full">
           <Button
             size="sm"
             variant="ghost"
             onClick={() => onAction(board.id, 'view')}
-            className="h-8 px-2 flex-1"
+            className="h-8 px-2 flex-1 sm:flex-none"
           >
-            <Eye className="h-3 w-3 mr-1" />
-            Ver
+            <Eye className="h-3 w-3" />
           </Button>
           
           <Button

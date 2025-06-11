@@ -41,7 +41,7 @@ export function OneBoardColumn({
   };
 
   return (
-    <div className="min-w-80 max-w-80">
+    <div className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80">
       <Card className="h-full flex flex-col">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
@@ -57,19 +57,19 @@ export function OneBoardColumn({
                     setIsEditingTitle(false);
                   }
                 }}
-                className="h-8 font-semibold"
+                className="h-8 font-semibold text-sm"
                 autoFocus
               />
             ) : (
               <h3 
-                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground"
+                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground truncate"
                 onClick={() => setIsEditingTitle(true)}
               >
                 {column.title}
               </h3>
             )}
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Button
                 size="sm"
                 variant="ghost"
@@ -96,7 +96,7 @@ export function OneBoardColumn({
 
         <CardContent className="flex-1 space-y-2 overflow-y-auto">
           {column.cards.map((card) => (
-            <Card key={card.id} className="p-3 cursor-pointer hover:shadow-sm">
+            <Card key={card.id} className="p-2 sm:p-3 cursor-pointer hover:shadow-sm">
               <div className="space-y-2">
                 <h4 className="text-sm font-medium line-clamp-2">{card.title}</h4>
                 {card.description && (
@@ -133,10 +133,11 @@ export function OneBoardColumn({
                     setIsAddingCard(false);
                   }
                 }}
+                className="text-sm"
                 autoFocus
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleAddCard}>
+                <Button size="sm" onClick={handleAddCard} className="text-xs">
                   Adicionar
                 </Button>
                 <Button 
@@ -146,6 +147,7 @@ export function OneBoardColumn({
                     setNewCardTitle('');
                     setIsAddingCard(false);
                   }}
+                  className="text-xs"
                 >
                   Cancelar
                 </Button>
@@ -155,7 +157,7 @@ export function OneBoardColumn({
             <Button
               variant="ghost"
               onClick={() => setIsAddingCard(true)}
-              className="w-full justify-start text-muted-foreground border-dashed border"
+              className="w-full justify-start text-muted-foreground border-dashed border text-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar card

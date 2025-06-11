@@ -121,7 +121,7 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
   return (
     <div className="flex-1 overflow-hidden bg-muted/20">
       <div className="h-full overflow-x-auto">
-        <div className="flex h-full gap-4 p-4 min-w-max">
+        <div className="flex h-full gap-3 sm:gap-4 p-3 sm:p-4 min-w-max">
           {columns.map((column) => (
             <OneBoardColumn
               key={column.id}
@@ -133,11 +133,11 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
             />
           ))}
           
-          <div className="min-w-80">
+          <div className="min-w-64 sm:min-w-80">
             <Button
               variant="outline"
               onClick={addColumn}
-              className="w-full h-12 border-dashed text-muted-foreground hover:text-foreground"
+              className="w-full h-10 sm:h-12 border-dashed text-muted-foreground hover:text-foreground text-sm"
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Coluna

@@ -22,34 +22,34 @@ export function OneBoardToolbar({
   onCreateStage
 }: OneBoardToolbarProps) {
   return (
-    <div className="border-b border-border bg-background p-4">
+    <div className="border-b border-border bg-background p-3 sm:p-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {activeBoard && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onBackToGrid}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-2 sm:px-3"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
           )}
 
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
               {activeBoard ? activeBoard.name : 'OneBoard'}
             </h1>
             {activeBoard && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 {activeBoard.description}
               </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {!activeBoard && (
             <>
               <div className="flex items-center border border-border rounded-lg p-1">
@@ -57,7 +57,7 @@ export function OneBoardToolbar({
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onViewModeChange('grid')}
-                  className="h-8 px-3"
+                  className="h-7 sm:h-8 px-2 sm:px-3"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -65,23 +65,23 @@ export function OneBoardToolbar({
                   variant={viewMode === 'canvas' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onViewModeChange('canvas')}
-                  className="h-8 px-3"
+                  className="h-7 sm:h-8 px-2 sm:px-3"
                 >
                   <Kanban className="h-4 w-4" />
                 </Button>
               </div>
 
-              <Button onClick={onCreateBoard} className="flex items-center gap-2">
+              <Button onClick={onCreateBoard} className="flex items-center gap-2 px-3 sm:px-4">
                 <Plus className="h-4 w-4" />
-                Novo Board
+                <span className="hidden sm:inline">Novo Board</span>
               </Button>
             </>
           )}
 
           {activeBoard && onCreateStage && (
-            <Button onClick={onCreateStage} className="flex items-center gap-2">
+            <Button onClick={onCreateStage} className="flex items-center gap-2 px-3 sm:px-4">
               <Columns className="h-4 w-4" />
-              Novo Stage
+              <span className="hidden sm:inline">Novo Stage</span>
             </Button>
           )}
         </div>
