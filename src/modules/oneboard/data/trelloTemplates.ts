@@ -227,6 +227,13 @@ export const TRELLO_CARD_EXAMPLES: Record<string, BoardCard[]> = {
   ]
 };
 
+// Export the templates in the format expected by BoardTemplateModal
+export const trelloTemplates = TRELLO_BOARD_TEMPLATES.map(template => ({
+  ...template,
+  columns: TRELLO_COLUMN_TEMPLATES[template.id] || [],
+  cards: TRELLO_CARD_EXAMPLES[template.id] || []
+}));
+
 export function createBoardFromTemplate(templateId: string, customName?: string): {
   board: Board;
   columns: BoardColumn[];
