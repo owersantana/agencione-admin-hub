@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Board, BoardColumn } from '../config';
-import { getTemplates } from '../data/trelloTemplates';
+import { trelloTemplates } from '../data/trelloTemplates';
 
 interface BoardTemplateModalProps {
   isOpen: boolean;
@@ -25,7 +24,7 @@ export function BoardTemplateModal({ isOpen, onClose, onCreateBoard }: BoardTemp
   const [description, setDescription] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  const templates = getTemplates();
+  const templates = trelloTemplates;
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
