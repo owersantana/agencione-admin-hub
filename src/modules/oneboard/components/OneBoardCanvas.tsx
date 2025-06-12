@@ -4,6 +4,7 @@ import { OneBoardColumn } from './OneBoardColumn';
 import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
 import { CreateColumnInline } from './CreateColumnInline';
 import { getDefaultKanbanColumns } from '../data/trelloTemplates';
+import { useToast } from '@/hooks/use-toast';
 import {
   DndContext,
   DragEndEvent,
@@ -31,6 +32,7 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
   const [columns, setColumns] = useState<BoardColumn[]>([]);
   const [activeColumn, setActiveColumn] = useState<BoardColumn | null>(null);
   const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -42,19 +44,48 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
 
   useEffect(() => {
     if (board) {
-      if (initialColumns && initialColumns.length > 0) {
-        // Se há colunas iniciais (de template), usar elas
-        const boardColumns = initialColumns.map(col => ({
-          ...col,
-          boardId: board.id
-        }));
-        setColumns(boardColumns);
+      const savedColumns = localStorage.getItem(`board-columns-${board.id}`);
+      
+      if (savedColumns) {
+        try {
+          const parsedColumns = JSON.parse(savedColumns);
+          setColumns(parsedColumns);
+        } catch (error) {
+          console.error('Error parsing saved columns:', error);
+          // Fallback to initial columns or empty
+          if (initialColumns && initialColumns.length > 0) {
+            const boardColumns = initialColumns.map(col => ({
+              ...col,
+              boardId: board.id
+            }));
+            setColumns(boardColumns);
+          } else {
+            setColumns([]);
+          }
+        }
       } else {
-        // Se não há colunas iniciais, começar vazio
-        setColumns([]);
+        // Se não há colunas salvas, usar as iniciais se existirem
+        if (initialColumns && initialColumns.length > 0) {
+          const boardColumns = initialColumns.map(col => ({
+            ...col,
+            boardId: board.id
+          }));
+          setColumns(boardColumns);
+          // Salvar as colunas iniciais
+          localStorage.setItem(`board-columns-${board.id}`, JSON.stringify(boardColumns));
+        } else {
+          setColumns([]);
+        }
       }
     }
   }, [board, initialColumns]);
+
+  // Salvar colunas no localStorage sempre que mudarem
+  useEffect(() => {
+    if (board && columns.length >= 0) {
+      localStorage.setItem(`board-columns-${board.id}`, JSON.stringify(columns));
+    }
+  }, [board, columns]);
 
   if (!board) {
     return (
@@ -65,16 +96,31 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
   }
 
   const addColumn = (title: string) => {
+    if (!title.trim()) {
+      toast({
+        title: "Erro",
+        description: "O título da coluna não pode estar vazio",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newColumn: BoardColumn = {
       id: crypto.randomUUID(),
-      title,
+      title: title.trim(),
       boardId: board.id,
       position: columns.length,
       cards: []
     };
+    
     const newColumns = [...columns, newColumn];
     setColumns(newColumns);
-    onBoardUpdate({ ...board, columnsCount: newColumns.length });
+    onBoardUpdate({ ...board, columnsCount: newColumns.length, updatedAt: new Date().toISOString() });
+    
+    toast({
+      title: "Sucesso",
+      description: `Coluna "${title}" criada com sucesso`
+    });
   };
 
   const updateColumn = (columnId: string, updates: Partial<BoardColumn>) => {
@@ -86,7 +132,12 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
   const deleteColumn = (columnId: string) => {
     const newColumns = columns.filter(col => col.id !== columnId);
     setColumns(newColumns);
-    onBoardUpdate({ ...board, columnsCount: newColumns.length });
+    onBoardUpdate({ ...board, columnsCount: newColumns.length, updatedAt: new Date().toISOString() });
+    
+    toast({
+      title: "Sucesso",
+      description: "Coluna removida com sucesso"
+    });
   };
 
   const addCard = (columnId: string, title: string) => {

@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Board } from '../config';
+import { useToast } from '@/hooks/use-toast';
 
 interface OneBoardCanvasToolbarProps {
   board: Board;
@@ -38,6 +39,7 @@ export function OneBoardCanvasToolbar({
 }: OneBoardCanvasToolbarProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(board.name);
+  const { toast } = useToast();
 
   const handleTitleSubmit = () => {
     if (title.trim() && title !== board.name) {
@@ -45,6 +47,10 @@ export function OneBoardCanvasToolbar({
         ...board,
         name: title.trim(),
         updatedAt: new Date().toISOString()
+      });
+      toast({
+        title: "Sucesso",
+        description: "Nome do board atualizado"
       });
     }
     setIsEditingTitle(false);
@@ -60,8 +66,44 @@ export function OneBoardCanvasToolbar({
   };
 
   const toggleFavorite = () => {
-    // Esta funcionalidade pode ser implementada futuramente
-    console.log('Toggle favorite');
+    // Recuperar favoritos do localStorage
+    const favoritesKey = 'oneboard-favorites';
+    const savedFavorites = localStorage.getItem(favoritesKey);
+    let favorites: string[] = [];
+    
+    if (savedFavorites) {
+      try {
+        favorites = JSON.parse(savedFavorites);
+      } catch (error) {
+        console.error('Error parsing favorites:', error);
+        favorites = [];
+      }
+    }
+
+    const isFavorite = favorites.includes(board.id);
+    let newFavorites: string[];
+
+    if (isFavorite) {
+      // Remover dos favoritos
+      newFavorites = favorites.filter(id => id !== board.id);
+      toast({
+        title: "Removido dos favoritos",
+        description: `${board.name} foi removido dos favoritos`
+      });
+    } else {
+      // Adicionar aos favoritos
+      newFavorites = [...favorites, board.id];
+      toast({
+        title: "Adicionado aos favoritos",
+        description: `${board.name} foi adicionado aos favoritos`
+      });
+    }
+
+    // Salvar no localStorage
+    localStorage.setItem(favoritesKey, JSON.stringify(newFavorites));
+    
+    // Forçar re-render
+    window.dispatchEvent(new Event('storage'));
   };
 
   const toggleVisibility = () => {
@@ -70,7 +112,30 @@ export function OneBoardCanvasToolbar({
       isShared: !board.isShared,
       updatedAt: new Date().toISOString()
     });
+    
+    toast({
+      title: "Visibilidade alterada",
+      description: `Board agora é ${!board.isShared ? 'público' : 'privado'}`
+    });
   };
+
+  // Verificar se o board está nos favoritos
+  const getFavoriteStatus = () => {
+    const favoritesKey = 'oneboard-favorites';
+    const savedFavorites = localStorage.getItem(favoritesKey);
+    
+    if (savedFavorites) {
+      try {
+        const favorites: string[] = JSON.parse(savedFavorites);
+        return favorites.includes(board.id);
+      } catch (error) {
+        return false;
+      }
+    }
+    return false;
+  };
+
+  const isFavorite = getFavoriteStatus();
 
   return (
     <div className="border-b border-border bg-background p-3 sm:p-4">
@@ -100,7 +165,7 @@ export function OneBoardCanvasToolbar({
             onClick={toggleFavorite}
             className="p-1 h-auto"
           >
-            <Star className="h-4 w-4" />
+            <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
           </Button>
 
           <div className="flex items-center gap-1">
