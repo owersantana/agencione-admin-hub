@@ -15,7 +15,7 @@ import { Board } from '../config';
 interface EditBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, description: string) => void;
+  onSubmit: (updatedBoard: Board) => void;
   board: Board | null;
 }
 
@@ -32,8 +32,12 @@ export function EditBoardModal({ isOpen, onClose, onSubmit, board }: EditBoardMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      onSubmit(name.trim(), description.trim());
+    if (name.trim() && board) {
+      onSubmit({
+        ...board,
+        name: name.trim(),
+        description: description.trim()
+      });
       onClose();
     }
   };

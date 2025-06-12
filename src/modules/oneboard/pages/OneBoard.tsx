@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { OneBoardToolbar } from '../components/OneBoardToolbar';
 import { OneBoardGrid } from '../components/OneBoardGrid';
@@ -9,7 +8,7 @@ import { ShareBoardModal } from '../components/ShareBoardModal';
 import { BoardTemplateModal } from '../components/BoardTemplateModal';
 import { Board, BoardColumn } from '../config';
 
-export function OneBoard() {
+function OneBoard() {
   const [boards, setBoards] = useState<Board[]>([
     {
       id: '1',
@@ -143,7 +142,7 @@ export function OneBoard() {
       />
 
       {viewMode === 'grid' ? (
-        <OneBoardGrid boards={boards} onAction={handleBoardAction} />
+        <OneBoardGrid boards={boards} onBoardAction={handleBoardAction} />
       ) : (
         <OneBoardCanvas 
           board={activeBoard} 
@@ -155,7 +154,7 @@ export function OneBoard() {
       <CreateBoardModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreateBoard={handleCreateBoard}
+        onSubmit={handleCreateBoard}
       />
 
       <EditBoardModal
@@ -165,7 +164,7 @@ export function OneBoard() {
           setEditingBoard(null);
         }}
         board={editingBoard}
-        onUpdateBoard={handleUpdateBoard}
+        onSubmit={handleUpdateBoard}
       />
 
       <ShareBoardModal
@@ -185,3 +184,5 @@ export function OneBoard() {
     </div>
   );
 }
+
+export default OneBoard;

@@ -11,11 +11,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Board } from '../config';
 
 interface CreateBoardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (name: string, description: string) => void;
+  onSubmit: (boardData: Omit<Board, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
 }
 
 export function CreateBoardModal({ isOpen, onClose, onSubmit }: CreateBoardModalProps) {
@@ -25,7 +26,13 @@ export function CreateBoardModal({ isOpen, onClose, onSubmit }: CreateBoardModal
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onSubmit(name.trim(), description.trim());
+      onSubmit({
+        name: name.trim(),
+        description: description.trim(),
+        columnsCount: 0,
+        isActive: true,
+        isShared: false
+      });
       setName('');
       setDescription('');
     }
