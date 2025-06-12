@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { OneBoardToolbar } from '../components/OneBoardToolbar';
 import { OneBoardGrid } from '../components/OneBoardGrid';
 import { OneBoardCanvas } from '../components/OneBoardCanvas';
@@ -7,6 +7,8 @@ import { EditBoardModal } from '../components/EditBoardModal';
 import { ShareBoardModal } from '../components/ShareBoardModal';
 import { BoardTemplateModal } from '../components/BoardTemplateModal';
 import { Board, BoardColumn } from '../config';
+
+const STORAGE_KEY = 'oneboard-data';
 
 function OneBoard() {
   const [boards, setBoards] = useState<Board[]>([
@@ -55,6 +57,34 @@ function OneBoard() {
   const [editingBoard, setEditingBoard] = useState<Board | null>(null);
   const [sharingBoard, setSharingBoard] = useState<Board | null>(null);
 
+  // Carregar dados do localStorage
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData.boards && Array.isArray(parsedData.boards)) {
+          setBoards(parsedData.boards);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Salvar dados no localStorage
+  const saveToStorage = (boardsData: Board[]) => {
+    try {
+      const dataToSave = {
+        boards: boardsData,
+        lastUpdated: new Date().toISOString()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error('Erro ao salvar dados no localStorage:', error);
+    }
+  };
+
   const handleBoardAction = (boardId: string, action: string) => {
     const board = boards.find(b => b.id === boardId);
     if (!board) return;
@@ -74,13 +104,17 @@ function OneBoard() {
         setIsShareModalOpen(true);
         break;
       case 'toggle-active':
-        setBoards(prev => prev.map(b => 
+        const updatedBoards = boards.map(b => 
           b.id === boardId ? { ...b, isActive: !b.isActive, updatedAt: new Date().toISOString() } : b
-        ));
+        );
+        setBoards(updatedBoards);
+        saveToStorage(updatedBoards);
         break;
       case 'delete':
         if (confirm('Tem certeza que deseja excluir este board?')) {
-          setBoards(prev => prev.filter(b => b.id !== boardId));
+          const filteredBoards = boards.filter(b => b.id !== boardId);
+          setBoards(filteredBoards);
+          saveToStorage(filteredBoards);
           if (activeBoard?.id === boardId) {
             setActiveBoard(null);
             setViewMode('grid');
@@ -98,12 +132,16 @@ function OneBoard() {
       updatedAt: new Date().toISOString(),
       createdBy: 'current-user'
     };
-    setBoards(prev => [...prev, newBoard]);
+    const updatedBoards = [...boards, newBoard];
+    setBoards(updatedBoards);
+    saveToStorage(updatedBoards);
     setIsCreateModalOpen(false);
   };
 
   const handleCreateBoardFromTemplate = (board: Board, columns: BoardColumn[]) => {
-    setBoards(prev => [...prev, board]);
+    const updatedBoards = [...boards, board];
+    setBoards(updatedBoards);
+    saveToStorage(updatedBoards);
     setActiveBoard(board);
     setActiveBoardColumns(columns);
     setViewMode('canvas');
@@ -111,9 +149,11 @@ function OneBoard() {
   };
 
   const handleUpdateBoard = (updatedBoard: Board) => {
-    setBoards(prev => prev.map(b => 
+    const updatedBoards = boards.map(b => 
       b.id === updatedBoard.id ? { ...updatedBoard, updatedAt: new Date().toISOString() } : b
-    ));
+    );
+    setBoards(updatedBoards);
+    saveToStorage(updatedBoards);
     if (activeBoard?.id === updatedBoard.id) {
       setActiveBoard(updatedBoard);
     }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Info } from 'lucide-react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
+import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
 import { CreateColumnInline } from './CreateColumnInline';
 import { getDefaultKanbanColumns } from '../data/trelloTemplates';
 import {
@@ -221,19 +220,13 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
-      <div className="border-b border-border bg-background p-3 sm:p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg sm:text-xl font-semibold">{board.name}</h2>
-            <Button variant="ghost" size="sm">
-              <Info className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        {board.description && (
-          <p className="text-sm text-muted-foreground mt-1">{board.description}</p>
-        )}
-      </div>
+      <OneBoardCanvasToolbar 
+        board={board}
+        onBoardUpdate={onBoardUpdate}
+        onShareBoard={() => console.log('Share board')}
+        onArchiveBoard={() => console.log('Archive board')}
+        onBoardSettings={() => console.log('Board settings')}
+      />
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-x-auto">
