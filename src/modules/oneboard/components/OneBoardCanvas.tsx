@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
 import { CreateColumnInline } from './CreateColumnInline';
+import { getDefaultKanbanColumns } from '../data/trelloTemplates';
 import {
   DndContext,
   DragEndEvent,
@@ -25,9 +25,10 @@ import {
 interface OneBoardCanvasProps {
   board: Board | null;
   onBoardUpdate: (board: Board) => void;
+  initialColumns?: BoardColumn[];
 }
 
-export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
+export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoardCanvasProps) {
   const [columns, setColumns] = useState<BoardColumn[]>([]);
   const [activeColumn, setActiveColumn] = useState<BoardColumn | null>(null);
   const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
@@ -42,9 +43,19 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
 
   useEffect(() => {
     if (board) {
-      setColumns([]);
+      if (initialColumns && initialColumns.length > 0) {
+        // Se há colunas iniciais (de template), usar elas
+        const boardColumns = initialColumns.map(col => ({
+          ...col,
+          boardId: board.id
+        }));
+        setColumns(boardColumns);
+      } else {
+        // Se não há colunas iniciais, começar vazio
+        setColumns([]);
+      }
     }
-  }, [board]);
+  }, [board, initialColumns]);
 
   if (!board) {
     return (
