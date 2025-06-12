@@ -109,6 +109,9 @@ function OneBoard() {
         );
         setBoards(updatedBoards);
         saveToStorage(updatedBoards);
+        if (activeBoard?.id === boardId) {
+          setActiveBoard(updatedBoards.find(b => b.id === boardId) || null);
+        }
         break;
       case 'delete':
         if (confirm('Tem certeza que deseja excluir este board?')) {
@@ -187,6 +190,7 @@ function OneBoard() {
         <OneBoardCanvas 
           board={activeBoard} 
           onBoardUpdate={handleUpdateBoard}
+          onBoardAction={handleBoardAction}
           initialColumns={activeBoardColumns}
         />
       )}

@@ -10,7 +10,9 @@ import {
   Filter,
   Settings,
   Share,
-  Archive
+  Archive,
+  Edit,
+  Power
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,17 +27,13 @@ import { useToast } from '@/hooks/use-toast';
 interface OneBoardCanvasToolbarProps {
   board: Board;
   onBoardUpdate: (board: Board) => void;
-  onShareBoard?: () => void;
-  onArchiveBoard?: () => void;
-  onBoardSettings?: () => void;
+  onBoardAction?: (boardId: string, action: string) => void;
 }
 
 export function OneBoardCanvasToolbar({ 
   board, 
-  onBoardUpdate, 
-  onShareBoard, 
-  onArchiveBoard,
-  onBoardSettings 
+  onBoardUpdate,
+  onBoardAction
 }: OneBoardCanvasToolbarProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(board.name);
@@ -66,7 +64,6 @@ export function OneBoardCanvasToolbar({
   };
 
   const toggleFavorite = () => {
-    // Recuperar favoritos do localStorage
     const favoritesKey = 'oneboard-favorites';
     const savedFavorites = localStorage.getItem(favoritesKey);
     let favorites: string[] = [];
@@ -84,14 +81,12 @@ export function OneBoardCanvasToolbar({
     let newFavorites: string[];
 
     if (isFavorite) {
-      // Remover dos favoritos
       newFavorites = favorites.filter(id => id !== board.id);
       toast({
         title: "Removido dos favoritos",
         description: `${board.name} foi removido dos favoritos`
       });
     } else {
-      // Adicionar aos favoritos
       newFavorites = [...favorites, board.id];
       toast({
         title: "Adicionado aos favoritos",
@@ -99,10 +94,7 @@ export function OneBoardCanvasToolbar({
       });
     }
 
-    // Salvar no localStorage
     localStorage.setItem(favoritesKey, JSON.stringify(newFavorites));
-    
-    // Forçar re-render
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -119,7 +111,12 @@ export function OneBoardCanvasToolbar({
     });
   };
 
-  // Verificar se o board está nos favoritos
+  const handleBoardAction = (action: string) => {
+    if (onBoardAction) {
+      onBoardAction(board.id, action);
+    }
+  };
+
   const getFavoriteStatus = () => {
     const favoritesKey = 'oneboard-favorites';
     const savedFavorites = localStorage.getItem(favoritesKey);
@@ -192,7 +189,7 @@ export function OneBoardCanvasToolbar({
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={onShareBoard}
+            onClick={() => handleBoardAction('share')}
             className="flex items-center gap-2"
           >
             <Users className="h-4 w-4" />
@@ -206,21 +203,25 @@ export function OneBoardCanvasToolbar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={onBoardSettings}>
-                <Settings className="h-4 w-4 mr-2" />
-                Configurações do Board
+              <DropdownMenuItem onClick={() => handleBoardAction('edit')}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar Board
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onShareBoard}>
+              <DropdownMenuItem onClick={() => handleBoardAction('share')}>
                 <Share className="h-4 w-4 mr-2" />
                 Compartilhar
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBoardAction('toggle-active')}>
+                <Power className="h-4 w-4 mr-2" />
+                {board.isActive ? 'Desativar' : 'Ativar'}
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={onArchiveBoard}
+                onClick={() => handleBoardAction('delete')}
                 className="text-destructive focus:text-destructive"
               >
                 <Archive className="h-4 w-4 mr-2" />
-                Arquivar Board
+                Excluir Board
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

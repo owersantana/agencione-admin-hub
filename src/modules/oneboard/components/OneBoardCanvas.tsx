@@ -3,7 +3,6 @@ import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
 import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
 import { CreateColumnInline } from './CreateColumnInline';
-import { getDefaultKanbanColumns } from '../data/trelloTemplates';
 import { useToast } from '@/hooks/use-toast';
 import {
   DndContext,
@@ -25,10 +24,11 @@ import {
 interface OneBoardCanvasProps {
   board: Board | null;
   onBoardUpdate: (board: Board) => void;
+  onBoardAction?: (boardId: string, action: string) => void;
   initialColumns?: BoardColumn[];
 }
 
-export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoardCanvasProps) {
+export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialColumns }: OneBoardCanvasProps) {
   const [columns, setColumns] = useState<BoardColumn[]>([]);
   const [activeColumn, setActiveColumn] = useState<BoardColumn | null>(null);
   const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
@@ -42,50 +42,49 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
     })
   );
 
+  // Função para salvar colunas no localStorage
+  const saveColumnsToStorage = (boardId: string, columnsToSave: BoardColumn[]) => {
+    console.log('Saving columns to storage:', columnsToSave);
+    localStorage.setItem(`board-columns-${boardId}`, JSON.stringify(columnsToSave));
+  };
+
   useEffect(() => {
     if (board) {
+      console.log('Loading board:', board.id);
       const savedColumns = localStorage.getItem(`board-columns-${board.id}`);
       
       if (savedColumns) {
         try {
           const parsedColumns = JSON.parse(savedColumns);
+          console.log('Loaded columns from storage:', parsedColumns);
           setColumns(parsedColumns);
         } catch (error) {
           console.error('Error parsing saved columns:', error);
-          // Fallback to initial columns or empty
           if (initialColumns && initialColumns.length > 0) {
             const boardColumns = initialColumns.map(col => ({
               ...col,
               boardId: board.id
             }));
             setColumns(boardColumns);
+            saveColumnsToStorage(board.id, boardColumns);
           } else {
             setColumns([]);
           }
         }
       } else {
-        // Se não há colunas salvas, usar as iniciais se existirem
         if (initialColumns && initialColumns.length > 0) {
           const boardColumns = initialColumns.map(col => ({
             ...col,
             boardId: board.id
           }));
           setColumns(boardColumns);
-          // Salvar as colunas iniciais
-          localStorage.setItem(`board-columns-${board.id}`, JSON.stringify(boardColumns));
+          saveColumnsToStorage(board.id, boardColumns);
         } else {
           setColumns([]);
         }
       }
     }
   }, [board, initialColumns]);
-
-  // Salvar colunas no localStorage sempre que mudarem
-  useEffect(() => {
-    if (board && columns.length >= 0) {
-      localStorage.setItem(`board-columns-${board.id}`, JSON.stringify(columns));
-    }
-  }, [board, columns]);
 
   if (!board) {
     return (
@@ -114,7 +113,11 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
     };
     
     const newColumns = [...columns, newColumn];
+    console.log('Adding new column:', newColumn);
+    console.log('New columns array:', newColumns);
+    
     setColumns(newColumns);
+    saveColumnsToStorage(board.id, newColumns);
     onBoardUpdate({ ...board, columnsCount: newColumns.length, updatedAt: new Date().toISOString() });
     
     toast({
@@ -124,14 +127,17 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
   };
 
   const updateColumn = (columnId: string, updates: Partial<BoardColumn>) => {
-    setColumns(prev => prev.map(col => 
+    const newColumns = columns.map(col => 
       col.id === columnId ? { ...col, ...updates } : col
-    ));
+    );
+    setColumns(newColumns);
+    saveColumnsToStorage(board.id, newColumns);
   };
 
   const deleteColumn = (columnId: string) => {
     const newColumns = columns.filter(col => col.id !== columnId);
     setColumns(newColumns);
+    saveColumnsToStorage(board.id, newColumns);
     onBoardUpdate({ ...board, columnsCount: newColumns.length, updatedAt: new Date().toISOString() });
     
     toast({
@@ -228,7 +234,9 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
         const overIndex = columns.findIndex(col => col.id === overColumnId);
         
         const newColumns = arrayMove(columns, activeIndex, overIndex);
-        setColumns(newColumns.map((col, index) => ({ ...col, position: index })));
+        const reorderedColumns = newColumns.map((col, index) => ({ ...col, position: index }));
+        setColumns(reorderedColumns);
+        saveColumnsToStorage(board.id, reorderedColumns);
       }
     }
 
@@ -274,9 +282,7 @@ export function OneBoardCanvas({ board, onBoardUpdate, initialColumns }: OneBoar
       <OneBoardCanvasToolbar 
         board={board}
         onBoardUpdate={onBoardUpdate}
-        onShareBoard={() => console.log('Share board')}
-        onArchiveBoard={() => console.log('Archive board')}
-        onBoardSettings={() => console.log('Board settings')}
+        onBoardAction={onBoardAction}
       />
 
       <div className="flex-1 overflow-hidden">
