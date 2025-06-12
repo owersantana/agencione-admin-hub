@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft, Grid, Kanban, Columns } from 'lucide-react';
+import { Plus, ArrowLeft, Grid, Kanban } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardToolbarProps {
@@ -10,7 +10,6 @@ interface OneBoardToolbarProps {
   viewMode: 'grid' | 'canvas';
   activeBoard: Board | null;
   onBackToGrid: () => void;
-  onCreateStage?: () => void;
 }
 
 export function OneBoardToolbar({
@@ -18,8 +17,7 @@ export function OneBoardToolbar({
   onViewModeChange,
   viewMode,
   activeBoard,
-  onBackToGrid,
-  onCreateStage
+  onBackToGrid
 }: OneBoardToolbarProps) {
   return (
     <div className="border-b border-border bg-background p-3 sm:p-4">
@@ -41,11 +39,6 @@ export function OneBoardToolbar({
             <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
               {activeBoard ? activeBoard.name : 'OneBoard'}
             </h1>
-            {activeBoard && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                {activeBoard.description}
-              </p>
-            )}
           </div>
         </div>
 
@@ -76,13 +69,6 @@ export function OneBoardToolbar({
                 <span className="hidden sm:inline">Novo Board</span>
               </Button>
             </>
-          )}
-
-          {activeBoard && onCreateStage && (
-            <Button onClick={onCreateStage} className="flex items-center gap-2 px-3 sm:px-4">
-              <Columns className="h-4 w-4" />
-              <span className="hidden sm:inline">Novo Stage</span>
-            </Button>
           )}
         </div>
       </div>

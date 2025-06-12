@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
+import { CreateColumnInline } from './CreateColumnInline';
 import {
   DndContext,
   DragEndEvent,
@@ -13,10 +14,12 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   horizontalListSortingStrategy,
+  arrayMove,
 } from '@dnd-kit/sortable';
 
 interface OneBoardCanvasProps {
@@ -39,7 +42,6 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
 
   useEffect(() => {
     if (board) {
-      // Start with empty columns
       setColumns([]);
     }
   }, [board]);
@@ -60,8 +62,9 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
       position: columns.length,
       cards: []
     };
-    setColumns(prev => [...prev, newColumn]);
-    onBoardUpdate({ ...board, columnsCount: columns.length + 1 });
+    const newColumns = [...columns, newColumn];
+    setColumns(newColumns);
+    onBoardUpdate({ ...board, columnsCount: newColumns.length });
   };
 
   const updateColumn = (columnId: string, updates: Partial<BoardColumn>) => {
@@ -71,8 +74,9 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
   };
 
   const deleteColumn = (columnId: string) => {
-    setColumns(prev => prev.filter(col => col.id !== columnId));
-    onBoardUpdate({ ...board, columnsCount: columns.length - 1 });
+    const newColumns = columns.filter(col => col.id !== columnId);
+    setColumns(newColumns);
+    onBoardUpdate({ ...board, columnsCount: newColumns.length });
   };
 
   const addCard = (columnId: string, title: string) => {
@@ -99,7 +103,7 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
 
     updateColumn(column.id, {
       cards: column.cards.map(card => 
-        card.id === cardId ? { ...card, ...updates } : card
+        card.id === cardId ? { ...card, ...updates, updatedAt: new Date().toISOString() } : card
       )
     });
   };
@@ -134,13 +138,11 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
       const activeCard = active.data.current?.card as BoardCard;
       
       if (overType === 'column') {
-        // Moving card to empty column
         const overColumn = over.data.current?.column as BoardColumn;
         if (activeCard.columnId !== overColumn.id) {
-          moveCardToColumn(activeCard.id, overColumn.id, 0);
+          moveCardToColumn(activeCard.id, overColumn.id, overColumn.cards.length);
         }
       } else if (overType === 'card') {
-        // Moving card over another card
         const overCard = over.data.current?.card as BoardCard;
         if (activeCard.id !== overCard.id) {
           const overColumn = columns.find(col => col.id === overCard.columnId);
@@ -155,22 +157,16 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over) return;
-
-    const activeType = active.data.current?.type;
     
-    if (activeType === 'column') {
-      const activeColumn = active.data.current?.column as BoardColumn;
-      const overColumn = over.data.current?.column as BoardColumn;
+    if (active.data.current?.type === 'column' && over) {
+      const activeColumnId = active.id as string;
+      const overColumnId = over.id as string;
       
-      if (activeColumn.id !== overColumn.id) {
-        const activeIndex = columns.findIndex(col => col.id === activeColumn.id);
-        const overIndex = columns.findIndex(col => col.id === overColumn.id);
+      if (activeColumnId !== overColumnId) {
+        const activeIndex = columns.findIndex(col => col.id === activeColumnId);
+        const overIndex = columns.findIndex(col => col.id === overColumnId);
         
-        const newColumns = [...columns];
-        const [removed] = newColumns.splice(activeIndex, 1);
-        newColumns.splice(overIndex, 0, removed);
-        
+        const newColumns = arrayMove(columns, activeIndex, overIndex);
         setColumns(newColumns.map((col, index) => ({ ...col, position: index })));
       }
     }
@@ -188,24 +184,32 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
     const card = fromColumn.cards.find(c => c.id === cardId);
     if (!card) return;
 
-    // Remove from source column
-    updateColumn(fromColumn.id, {
-      cards: fromColumn.cards.filter(c => c.id !== cardId)
-    });
+    if (fromColumn.id === toColumnId) {
+      const newCards = [...fromColumn.cards];
+      const cardIndex = newCards.findIndex(c => c.id === cardId);
+      const [removedCard] = newCards.splice(cardIndex, 1);
+      newCards.splice(newPosition, 0, removedCard);
+      
+      updateColumn(fromColumn.id, {
+        cards: newCards.map((c, index) => ({ ...c, position: index }))
+      });
+    } else {
+      updateColumn(fromColumn.id, {
+        cards: fromColumn.cards.filter(c => c.id !== cardId)
+      });
 
-    // Add to target column
-    const updatedCard = { ...card, columnId: toColumnId };
-    const newCards = [...toColumn.cards];
-    newCards.splice(newPosition, 0, updatedCard);
-    
-    updateColumn(toColumnId, {
-      cards: newCards.map((c, index) => ({ ...c, position: index }))
-    });
+      const updatedCard = { ...card, columnId: toColumnId };
+      const newCards = [...toColumn.cards];
+      newCards.splice(newPosition, 0, updatedCard);
+      
+      updateColumn(toColumnId, {
+        cards: newCards.map((c, index) => ({ ...c, position: index }))
+      });
+    }
   };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
-      {/* Board Toolbar */}
       <div className="border-b border-border bg-background p-3 sm:p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -214,26 +218,17 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
               <Info className="h-4 w-4" />
             </Button>
           </div>
-          <Button 
-            onClick={() => {
-              const title = prompt('Nome da coluna:');
-              if (title?.trim()) {
-                addColumn(title.trim());
-              }
-            }}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nova Coluna</span>
-          </Button>
         </div>
+        {board.description && (
+          <p className="text-sm text-muted-foreground mt-1">{board.description}</p>
+        )}
       </div>
 
-      {/* Canvas */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-x-auto">
           <DndContext
             sensors={sensors}
+            collisionDetection={closestCorners}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
@@ -252,6 +247,8 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
                   />
                 ))}
               </SortableContext>
+              
+              <CreateColumnInline onCreateColumn={addColumn} />
             </div>
 
             <DragOverlay>
@@ -268,8 +265,13 @@ export function OneBoardCanvas({ board, onBoardUpdate }: OneBoardCanvasProps) {
                 </div>
               )}
               {activeCard && (
-                <div className="p-2 sm:p-3 bg-background border rounded-lg shadow-lg opacity-50">
+                <div className="p-2 sm:p-3 bg-background border rounded-lg shadow-lg opacity-50 min-w-64">
                   <h4 className="text-sm font-medium">{activeCard.title}</h4>
+                  {activeCard.description && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {activeCard.description}
+                    </p>
+                  )}
                 </div>
               )}
             </DragOverlay>

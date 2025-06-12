@@ -20,20 +20,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
-interface OneBoardColumnProps {
-  column: BoardColumn;
-  onUpdateColumn: (columnId: string, updates: Partial<BoardColumn>) => void;
-  onDeleteColumn: (columnId: string) => void;
-  onAddCard: (columnId: string, title: string) => void;
+interface SortableCardProps {
+  card: BoardCard;
   onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
   onDeleteCard: (cardId: string) => void;
 }
 
-function SortableCard({ card, onUpdateCard, onDeleteCard }: {
-  card: BoardCard;
-  onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
-  onDeleteCard: (cardId: string) => void;
-}) {
+function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -66,11 +59,13 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
     setIsEditing(false);
   };
 
-  const handleDoubleClick = () => {
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsEditing(true);
   };
 
-  const handleSingleClick = () => {
+  const handleSingleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!isEditing) {
       setIsDetailModalOpen(true);
     }
@@ -85,6 +80,15 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
     }
   };
 
+  const getPriorityText = (priority?: 'low' | 'medium' | 'high') => {
+    switch (priority) {
+      case 'high': return 'Alta';
+      case 'medium': return 'Média';
+      case 'low': return 'Baixa';
+      default: return '';
+    }
+  };
+
   return (
     <>
       <Card 
@@ -92,7 +96,8 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
         style={style}
         {...attributes}
         {...listeners}
-        className="p-2 sm:p-3 cursor-pointer hover:shadow-sm"
+        className="p-2 sm:p-3 cursor-pointer hover:shadow-sm transition-shadow group"
+        onClick={handleSingleClick}
       >
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
@@ -102,6 +107,7 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
                 onChange={(e) => setEditTitle(e.target.value)}
                 onBlur={handleTitleSubmit}
                 onKeyDown={(e) => {
+                  e.stopPropagation();
                   if (e.key === 'Enter') handleTitleSubmit();
                   if (e.key === 'Escape') {
                     setEditTitle(card.title);
@@ -110,12 +116,12 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
                 }}
                 className="text-sm font-medium"
                 autoFocus
+                onClick={(e) => e.stopPropagation()}
               />
             ) : (
               <h4 
                 className="text-sm font-medium line-clamp-2 flex-1"
                 onDoubleClick={handleDoubleClick}
-                onClick={handleSingleClick}
               >
                 {card.title}
               </h4>
@@ -123,21 +129,35 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <MoreHorizontal className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}>
                   <Edit className="h-3 w-3 mr-2" />
                   Editar título
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsDetailModalOpen(true)}>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDetailModalOpen(true);
+                }}>
                   <Edit className="h-3 w-3 mr-2" />
                   Ver detalhes
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => onDeleteCard(card.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteCard(card.id);
+                  }}
                   className="text-destructive"
                 >
                   <Trash2 className="h-3 w-3 mr-2" />
@@ -156,9 +176,7 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
           <div className="flex items-center justify-between">
             {card.priority && (
               <Badge variant={getPriorityColor(card.priority)} className="text-xs">
-                {card.priority === 'high' && 'Alta'}
-                {card.priority === 'medium' && 'Média'}
-                {card.priority === 'low' && 'Baixa'}
+                {getPriorityText(card.priority)}
               </Badge>
             )}
             
@@ -191,6 +209,15 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: {
       />
     </>
   );
+}
+
+interface OneBoardColumnProps {
+  column: BoardColumn;
+  onUpdateColumn: (columnId: string, updates: Partial<BoardColumn>) => void;
+  onDeleteColumn: (columnId: string) => void;
+  onAddCard: (columnId: string, title: string) => void;
+  onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
+  onDeleteCard: (cardId: string) => void;
 }
 
 export function OneBoardColumn({
@@ -247,7 +274,7 @@ export function OneBoardColumn({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80"
+      className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80 flex flex-col"
     >
       <Card className="h-full flex flex-col">
         <CardHeader className="pb-3" {...listeners}>
@@ -269,7 +296,7 @@ export function OneBoardColumn({
               />
             ) : (
               <h3 
-                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground truncate"
+                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground truncate flex-1"
                 onClick={() => setIsEditingTitle(true)}
               >
                 {column.title}
@@ -350,7 +377,7 @@ export function OneBoardColumn({
             <Button
               variant="ghost"
               onClick={() => setIsAddingCard(true)}
-              className="w-full justify-start text-muted-foreground border-dashed border text-sm"
+              className="w-full justify-start text-muted-foreground border-dashed border text-sm hover:border-primary/50"
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar card
