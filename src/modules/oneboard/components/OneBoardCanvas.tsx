@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
@@ -253,27 +254,47 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
     const card = fromColumn.cards.find(c => c.id === cardId);
     if (!card) return;
 
+    // Se é a mesma coluna, apenas reordena
     if (fromColumn.id === toColumnId) {
       const newCards = [...fromColumn.cards];
       const cardIndex = newCards.findIndex(c => c.id === cardId);
       const [removedCard] = newCards.splice(cardIndex, 1);
       newCards.splice(newPosition, 0, removedCard);
       
-      updateColumn(fromColumn.id, {
-        cards: newCards.map((c, index) => ({ ...c, position: index }))
-      });
-    } else {
-      updateColumn(fromColumn.id, {
-        cards: fromColumn.cards.filter(c => c.id !== cardId)
-      });
-
-      const updatedCard = { ...card, columnId: toColumnId };
-      const newCards = [...toColumn.cards];
-      newCards.splice(newPosition, 0, updatedCard);
+      const newColumns = columns.map(col => 
+        col.id === fromColumn.id 
+          ? { ...col, cards: newCards.map((c, index) => ({ ...c, position: index })) }
+          : col
+      );
       
-      updateColumn(toColumnId, {
-        cards: newCards.map((c, index) => ({ ...c, position: index }))
+      setColumns(newColumns);
+      saveColumnsToStorage(board.id, newColumns);
+    } else {
+      // Move para coluna diferente
+      const updatedCard = { ...card, columnId: toColumnId };
+      
+      // Remove da coluna de origem e adiciona na coluna de destino
+      const newColumns = columns.map(col => {
+        if (col.id === fromColumn.id) {
+          // Remove o card da coluna de origem
+          return {
+            ...col,
+            cards: col.cards.filter(c => c.id !== cardId).map((c, index) => ({ ...c, position: index }))
+          };
+        } else if (col.id === toColumnId) {
+          // Adiciona o card na coluna de destino
+          const newCards = [...col.cards];
+          newCards.splice(newPosition, 0, updatedCard);
+          return {
+            ...col,
+            cards: newCards.map((c, index) => ({ ...c, position: index }))
+          };
+        }
+        return col;
       });
+      
+      setColumns(newColumns);
+      saveColumnsToStorage(board.id, newColumns);
     }
   };
 
