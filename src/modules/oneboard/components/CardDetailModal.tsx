@@ -10,12 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image } from 'lucide-react';
-import { BoardCard, Label as LabelType, Checklist } from '../config';
+import { BoardCard, Label as LabelType, Checklist, Member } from '../config';
 import { LabelManager } from './LabelManager';
 import { ChecklistManager } from './ChecklistManager';
 import { DatePicker } from './DatePicker';
 import { CoverImageSelector } from './CoverImageSelector';
+import { MemberManager } from './MemberManager';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -117,12 +119,24 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
     onUpdateCard(card.id, { coverImage: url });
   };
 
+  const handleAddMember = (member: Member) => {
+    onUpdateCard(card.id, {
+      members: [...(card.members || []), member]
+    });
+  };
+
+  const handleRemoveMember = (memberId: string) => {
+    onUpdateCard(card.id, {
+      members: card.members?.filter(member => member.id !== memberId) || []
+    });
+  };
+
   const sidebarActions = [
     { 
       icon: User, 
       label: 'Membros', 
       section: 'add', 
-      action: () => console.log('Membros'),
+      action: () => setActiveSection(activeSection === 'members' ? null : 'members'),
       key: 'members'
     },
     { 
@@ -195,7 +209,7 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] min-h-[600px] overflow-hidden p-0 flex flex-col">
+      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden p-0 flex flex-col">
         <div className="flex h-full min-h-0">
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col min-h-0">
@@ -258,6 +272,26 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                     ))}
                   </div>
                 </div>
+
+                {/* Members Display */}
+                {card.members && card.members.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Membros</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {card.members.map((member) => (
+                        <div key={member.id} className="flex items-center gap-2 bg-muted px-2 py-1 rounded-lg">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={member.avatar} alt={member.name} />
+                            <AvatarFallback className="text-xs">
+                              {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{member.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Labels Display */}
                 {card.labels && card.labels.length > 0 && (
@@ -408,7 +442,11 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                     key={index}
                     variant={activeSection === action.key ? "default" : "ghost"}
                     size="sm"
-                    className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
+                    className={`w-full justify-start text-sm h-9 transition-colors ${
+                      activeSection === action.key 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background hover:bg-muted"
+                    }`}
                     onClick={action.action}
                   >
                     <action.icon className="h-4 w-4 mr-3" />
@@ -436,6 +474,17 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
               </div>
 
               {/* Active Section Content */}
+              {activeSection === 'members' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Membros</h4>
+                  <MemberManager
+                    members={card.members || []}
+                    onAddMember={handleAddMember}
+                    onRemoveMember={handleRemoveMember}
+                  />
+                </div>
+              )}
+
               {activeSection === 'labels' && (
                 <div className="space-y-2 p-3 border rounded-lg bg-background">
                   <h4 className="font-medium">Etiquetas</h4>

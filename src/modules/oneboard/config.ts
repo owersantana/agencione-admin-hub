@@ -1,4 +1,3 @@
-
 export interface OneBoardConfig {
   id: string;
   name: string;
@@ -55,6 +54,13 @@ export interface Checklist {
   items: ChecklistItem[];
 }
 
+export interface Member {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 export interface BoardCard {
   id: string;
   title: string;
@@ -68,6 +74,7 @@ export interface BoardCard {
   labels?: Label[];
   checklists?: Checklist[];
   coverImage?: string;
+  members?: Member[];
   comments?: Array<{id: string, text: string, author: string, createdAt: string}>;
   createdAt: string;
   updatedAt: string;
