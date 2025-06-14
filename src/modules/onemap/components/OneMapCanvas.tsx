@@ -31,7 +31,7 @@ const nodeTypes: NodeTypes = {
 
 export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<MindMapNodeData>>(map?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
     map?.connections?.map(conn => ({
       id: conn.id,
       source: conn.source,
@@ -181,6 +181,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       connections: edges.map(edge => ({ 
         ...edge, 
         thickness: 2,
+        type: edge.type || 'smoothstep',
         style: edge.style || { stroke: '#3B82F6', strokeWidth: 2 }
       })),
       updatedAt: new Date().toISOString(),
