@@ -8,7 +8,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image } from 'lucide-react';
@@ -18,6 +17,7 @@ import { ChecklistManager } from './ChecklistManager';
 import { DatePicker } from './DatePicker';
 import { CoverImageSelector } from './CoverImageSelector';
 import { MemberManager } from './MemberManager';
+import { DescriptionEditor } from './DescriptionEditor';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -209,7 +209,7 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[90vh] overflow-hidden p-0 flex flex-col">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden p-0 flex flex-col">
         <div className="flex h-full min-h-0">
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col min-h-0">
@@ -241,12 +241,10 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
 
                 <div className="space-y-2">
                   <Label htmlFor="card-description">Descrição</Label>
-                  <Textarea
-                    id="card-description"
+                  <DescriptionEditor
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Descrição do card"
-                    rows={4}
+                    onChange={setDescription}
+                    placeholder="Adicione uma descrição mais detalhada..."
                   />
                 </div>
 
@@ -377,13 +375,10 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                   <div className="space-y-2">
                     <Label htmlFor="comment">Escrever um comentário</Label>
                     <div className="flex gap-2">
-                      <Textarea
-                        id="comment"
+                      <DescriptionEditor
                         value={comment}
-                        onChange={(e) => setComment(e.target.value)}
+                        onChange={setComment}
                         placeholder="Escrever um comentário..."
-                        rows={3}
-                        className="flex-1"
                       />
                     </div>
                     <Button onClick={addComment} size="sm" disabled={!comment.trim()}>
