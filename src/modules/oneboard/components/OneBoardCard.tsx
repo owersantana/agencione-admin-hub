@@ -24,18 +24,20 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
     }, 0) || 0);
   }, 0) || 0;
 
-  const totalMembers = board.columns?.reduce((members, column) => {
+  // Calcular membros únicos de todos os cards do board
+  const uniqueMembers = new Set<string>();
+  board.columns?.forEach(column => {
     column.cards?.forEach(card => {
       if (card.members) {
         card.members.forEach(member => {
-          if (!members.some(m => m.id === member.id)) {
-            members.push(member);
-          }
+          uniqueMembers.add(member.id);
         });
       }
     });
-    return members;
-  }, [] as any[]).length || 0;
+  });
+  const totalMembers = uniqueMembers.size;
+
+  console.log(`Board ${board.name}: ${totalAttachments} anexos, ${totalMembers} membros únicos`);
 
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 h-fit">
