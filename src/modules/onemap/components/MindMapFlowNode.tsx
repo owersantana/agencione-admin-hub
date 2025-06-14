@@ -1,5 +1,5 @@
 
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,12 +26,20 @@ export const MindMapFlowNode = memo(({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(data.text);
 
-  const handleDoubleClick = () => {
+  // Update editText when data.text changes
+  useEffect(() => {
+    setEditText(data.text);
+  }, [data.text]);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('Double click detected, starting edit mode');
     setIsEditing(true);
     setEditText(data.text);
   };
 
   const handleEditSubmit = () => {
+    console.log('Submitting edit:', editText);
     if (editText.trim()) {
       onUpdateNode(id, { text: editText.trim() });
     }
@@ -39,19 +47,38 @@ export const MindMapFlowNode = memo(({
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    console.log('Key pressed:', e.key);
+    e.stopPropagation(); // Prevent event from bubbling up
+    
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleEditSubmit();
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       setIsEditing(false);
       setEditText(data.text);
     } else if (e.key === 'Tab') {
       e.preventDefault();
+      console.log('Tab pressed, creating child node');
       handleEditSubmit();
-      // Criar nó filho após salvar o texto atual
+      // Use a longer timeout to ensure the edit is saved first
       setTimeout(() => {
+        console.log('Calling onAddChild for:', id);
         onAddChild(id);
-      }, 50);
+      }, 100);
     }
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log('Edit button clicked');
+    setIsEditing(true);
+    setEditText(data.text);
+  };
+
+  const handleInputBlur = () => {
+    console.log('Input blurred, submitting edit');
+    handleEditSubmit();
   };
 
   const hasChildren = data.children && data.children.length > 0;
@@ -84,7 +111,7 @@ export const MindMapFlowNode = memo(({
           <Input
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
-            onBlur={handleEditSubmit}
+            onBlur={handleInputBlur}
             onKeyDown={handleEditKeyDown}
             className="text-center border-none bg-transparent text-white placeholder-white/70"
             style={{ color: data.color }}
@@ -131,10 +158,7 @@ export const MindMapFlowNode = memo(({
             size="sm"
             variant="secondary"
             className="h-6 w-6 p-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsEditing(true);
-            }}
+            onClick={handleEditClick}
           >
             <Edit3 className="h-3 w-3" />
           </Button>

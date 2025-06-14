@@ -1,4 +1,3 @@
-
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
@@ -54,8 +53,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       animated: false,
       style: { 
         stroke: '#E5E7EB', 
-        strokeWidth: 1,
-        strokeOpacity: 0.6
+        strokeWidth: 0.8,
+        strokeOpacity: 0.4
       },
     }));
   }, [map?.connections]);
@@ -80,8 +79,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         animated: false,
         style: { 
           stroke: '#E5E7EB', 
-          strokeWidth: 1,
-          strokeOpacity: 0.6
+          strokeWidth: 0.8,
+          strokeOpacity: 0.4
         },
       })) || [];
       setEdges(safeEdges);
@@ -140,8 +139,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         animated: false,
         style: { 
           stroke: '#E5E7EB', 
-          strokeWidth: 1,
-          strokeOpacity: 0.6
+          strokeWidth: 0.8,
+          strokeOpacity: 0.4
         },
       };
       
@@ -164,7 +163,6 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
           description: "Clique em outro nó para criar a conexão",
         });
       } else if (selectedNodeId !== node.id) {
-        // Create connection
         const params: Connection = {
           source: selectedNodeId,
           target: node.id,
@@ -198,6 +196,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
   }, [isConnecting, toast]);
 
   const handleNodeUpdate = useCallback((nodeId: string, updates: Partial<MindMapNodeData>) => {
+    console.log('Updating node:', nodeId, 'with updates:', updates);
     setNodes((nds) =>
       nds.map((node) =>
         node.id === nodeId
@@ -223,6 +222,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
   }, [setNodes, toast]);
 
   const handleAddNode = useCallback((parentId?: string) => {
+    console.log('Adding new node with parent:', parentId);
     const parentNode = parentId ? nodes.find(n => n.id === parentId) : null;
     const rootNode = nodes.find(n => n.data.isRoot);
     
@@ -291,7 +291,6 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       setEdges((eds) => [...eds, newEdge]);
     }
     
-    // Selecionar o novo nó automaticamente
     setSelectedNodeId(newNode.id);
     
     toast({
@@ -347,8 +346,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         type: edge.type || 'smoothstep',
         style: { 
           stroke: '#E5E7EB', 
-          strokeWidth: 1,
-          strokeOpacity: 0.6
+          strokeWidth: 0.8,
+          strokeOpacity: 0.4
         }
       })),
       updatedAt: new Date().toISOString(),
