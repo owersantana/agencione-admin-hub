@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Paperclip, Users } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardCardProps {
@@ -86,20 +85,6 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
           <span className="sm:hidden">
             {formatDate(board.createdAt).split('/').slice(0, 2).join('/')}
           </span>
-        </div>
-
-        {/* Indicadores de anexos e membros */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1 text-blue-600">
-            <Paperclip className="h-3 w-3" />
-            <span>{totalAttachments}</span>
-            <span className="text-xs">anexos</span>
-          </div>
-          <div className="flex items-center gap-1 text-green-600">
-            <Users className="h-3 w-3" />
-            <span>{totalMembers}</span>
-            <span className="text-xs">membros</span>
-          </div>
         </div>
       </CardContent>
     </Card>
