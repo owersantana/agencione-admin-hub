@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share } from 'lucide-react';
+import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move } from 'lucide-react';
 import { BoardCard } from '../config';
 
 interface CardDetailModalProps {
@@ -90,21 +90,24 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
   };
 
   const sidebarActions = [
-    { icon: User, label: 'Membros', action: () => {} },
-    { icon: Tag, label: 'Etiquetas', action: () => {} },
-    { icon: List, label: 'Checklist', action: () => {} },
-    { icon: Calendar, label: 'Datas', action: () => {} },
-    { icon: Paperclip, label: 'Anexo', action: () => {} },
-    { icon: Tag, label: 'Capa', action: () => {} },
-    { icon: User, label: 'Mover', action: () => {} },
-    { icon: User, label: 'Copiar', action: () => {} },
-    { icon: User, label: 'Arquivar', action: () => {} },
-    { icon: Share, label: 'Compartilhar', action: () => {} },
+    { icon: User, label: 'Membros', section: 'add', action: () => console.log('Membros') },
+    { icon: Tag, label: 'Etiquetas', section: 'add', action: () => console.log('Etiquetas') },
+    { icon: List, label: 'Checklist', section: 'add', action: () => console.log('Checklist') },
+    { icon: Calendar, label: 'Datas', section: 'add', action: () => console.log('Datas') },
+    { icon: Paperclip, label: 'Anexo', section: 'add', action: () => console.log('Anexo') },
+    { icon: Tag, label: 'Capa', section: 'add', action: () => console.log('Capa') },
+    { icon: Move, label: 'Mover', section: 'actions', action: () => console.log('Mover') },
+    { icon: Copy, label: 'Copiar', section: 'actions', action: () => console.log('Copiar') },
+    { icon: Archive, label: 'Arquivar', section: 'actions', action: () => console.log('Arquivar') },
+    { icon: Share, label: 'Compartilhar', section: 'actions', action: () => console.log('Compartilhar') },
   ];
+
+  const addActions = sidebarActions.filter(action => action.section === 'add');
+  const actionsList = sidebarActions.filter(action => action.section === 'actions');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
         <div className="flex h-full">
           {/* Main Content Area */}
           <div className="flex-1 p-6 overflow-y-auto">
@@ -253,20 +256,20 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
           </div>
 
           {/* Sidebar */}
-          <div className="w-48 bg-muted/30 border-l p-4 overflow-y-auto">
+          <div className="w-52 bg-muted/30 border-l p-4 overflow-y-auto">
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Adicionar ao card
               </Label>
-              {sidebarActions.slice(0, 6).map((action, index) => (
+              {addActions.map((action, index) => (
                 <Button
                   key={index}
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start text-sm h-8"
+                  className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
                   onClick={action.action}
                 >
-                  <action.icon className="h-4 w-4 mr-2" />
+                  <action.icon className="h-4 w-4 mr-3" />
                   {action.label}
                 </Button>
               ))}
@@ -276,15 +279,15 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
               <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Ações
               </Label>
-              {sidebarActions.slice(6).map((action, index) => (
+              {actionsList.map((action, index) => (
                 <Button
                   key={index}
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start text-sm h-8"
+                  className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
                   onClick={action.action}
                 >
-                  <action.icon className="h-4 w-4 mr-2" />
+                  <action.icon className="h-4 w-4 mr-3" />
                   {action.label}
                 </Button>
               ))}

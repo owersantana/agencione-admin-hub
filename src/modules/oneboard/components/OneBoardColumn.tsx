@@ -277,7 +277,7 @@ export function OneBoardColumn({
       className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80 flex flex-col"
     >
       <Card className="h-full flex flex-col">
-        <CardHeader className="pb-3 bg-muted/30 rounded-t-lg" {...listeners}>
+        <CardHeader className="pb-3 bg-gradient-to-br from-muted/40 to-muted/60 rounded-t-lg border-b border-border/50" {...listeners}>
           <div className="flex items-center justify-between">
             {isEditingTitle ? (
               <Input
@@ -296,7 +296,7 @@ export function OneBoardColumn({
               />
             ) : (
               <h3 
-                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground truncate flex-1 px-2 py-1 rounded bg-background/50 hover:bg-background/80 transition-colors"
+                className="font-semibold text-sm cursor-pointer hover:text-muted-foreground truncate flex-1 px-3 py-2 rounded-md bg-background/60 hover:bg-background/80 transition-colors shadow-sm border border-border/30"
                 onClick={() => setIsEditingTitle(true)}
               >
                 {column.title}
