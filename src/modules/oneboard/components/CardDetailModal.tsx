@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image, Edit, Trash2 } from 'lucide-react';
-import { BoardCard, Label as LabelType, Checklist, Member } from '../config';
+import { BoardCard, Label as LabelType, Checklist, Member, BoardColumn } from '../config';
 import { LabelManager } from './LabelManager';
 import { ChecklistManager } from './ChecklistManager';
 import { DatePicker } from './DatePicker';
@@ -21,6 +21,8 @@ import { DescriptionEditor } from './DescriptionEditor';
 import { AttachmentManager, Attachment } from './AttachmentManager';
 import { ConfirmationModal } from './ConfirmationModal';
 import { ShareCardModal } from './ShareCardModal';
+import { MoveCardModal } from './MoveCardModal';
+import { CopyCardModal } from './CopyCardModal';
 import { useToast } from '@/hooks/use-toast';
 
 interface CardDetailModalProps {
@@ -28,9 +30,20 @@ interface CardDetailModalProps {
   onClose: () => void;
   card: BoardCard | null;
   onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
+  columns?: BoardColumn[];
+  onMoveCard?: (cardId: string, targetColumnId: string, position: number) => void;
+  onCopyCard?: (card: BoardCard, targetColumnId: string, position: number, newTitle: string, copyOptions: any) => void;
 }
 
-export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDetailModalProps) {
+export function CardDetailModal({ 
+  isOpen, 
+  onClose, 
+  card, 
+  onUpdateCard, 
+  columns = [],
+  onMoveCard,
+  onCopyCard
+}: CardDetailModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [newTag, setNewTag] = useState('');
@@ -41,6 +54,8 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
   const [editingCommentText, setEditingCommentText] = useState('');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -146,6 +161,26 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
     onClose();
   };
 
+  const handleMoveCard = (targetColumnId: string, position: number) => {
+    if (onMoveCard) {
+      onMoveCard(card.id, targetColumnId, position);
+      toast({
+        title: "Card movido",
+        description: `O card "${card.title}" foi movido com sucesso.`
+      });
+    }
+  };
+
+  const handleCopyCard = (targetColumnId: string, position: number, newTitle: string, copyOptions: any) => {
+    if (onCopyCard) {
+      onCopyCard(card, targetColumnId, position, newTitle, copyOptions);
+      toast({
+        title: "Card copiado",
+        description: `O card "${newTitle}" foi criado com sucesso.`
+      });
+    }
+  };
+
   const handleAddLabel = (label: LabelType) => {
     onUpdateCard(card.id, {
       labels: [...(card.labels || []), label]
@@ -241,14 +276,14 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
       icon: Move, 
       label: 'Mover', 
       section: 'actions', 
-      action: () => console.log('Mover'),
+      action: () => setIsMoveModalOpen(true),
       key: 'move'
     },
     { 
       icon: Copy, 
       label: 'Copiar', 
       section: 'actions', 
-      action: () => console.log('Copiar'),
+      action: () => setIsCopyModalOpen(true),
       key: 'copy'
     },
     { 
@@ -674,6 +709,24 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
         description={`Tem certeza que deseja arquivar o card "${card.title}"? Você poderá restaurá-lo posteriormente.`}
         confirmText="Arquivar"
         cancelText="Cancelar"
+      />
+
+      <MoveCardModal
+        isOpen={isMoveModalOpen}
+        onClose={() => setIsMoveModalOpen(false)}
+        onMove={handleMoveCard}
+        currentColumnId={card.columnId}
+        columns={columns}
+        cardTitle={card.title}
+      />
+
+      <CopyCardModal
+        isOpen={isCopyModalOpen}
+        onClose={() => setIsCopyModalOpen(false)}
+        onCopy={handleCopyCard}
+        currentColumnId={card.columnId}
+        columns={columns}
+        cardTitle={card.title}
       />
     </>
   );

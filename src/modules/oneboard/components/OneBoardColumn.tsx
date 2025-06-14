@@ -27,9 +27,19 @@ interface SortableCardProps {
   card: BoardCard;
   onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
   onDeleteCard: (cardId: string) => void;
+  columns?: BoardColumn[];
+  onMoveCard?: (cardId: string, targetColumnId: string, position: number) => void;
+  onCopyCard?: (card: BoardCard, targetColumnId: string, position: number, newTitle: string, copyOptions: any) => void;
 }
 
-function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
+function SortableCard({ 
+  card, 
+  onUpdateCard, 
+  onDeleteCard, 
+  columns = [],
+  onMoveCard,
+  onCopyCard 
+}: SortableCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -82,14 +92,10 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
   };
 
   const handleArchiveCard = () => {
-    // Simular arquivamento do card
     toast({
       title: "Card arquivado",
       description: `O card "${card.title}" foi arquivado com sucesso.`
     });
-    
-    // Aqui você poderia implementar a lógica real de arquivamento
-    // Por exemplo: onUpdateCard(card.id, { archived: true });
   };
 
   const getPriorityColor = (priority?: 'low' | 'medium' | 'high') => {
@@ -110,7 +116,6 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
     }
   };
 
-  // Calcular totais de anexos e membros do card
   const totalAttachments = card.attachments?.length || 0;
   const totalMembers = card.members?.length || 0;
 
@@ -224,7 +229,6 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
             </p>
           )}
 
-          {/* Labels Display */}
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {card.labels.slice(0, 3).map((label) => (
@@ -270,7 +274,6 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
             )}
           </div>
 
-          {/* Due Date and Checklist Progress */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             {card.dueDate && (
               <div className="flex items-center gap-1">
@@ -288,7 +291,6 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
             )}
           </div>
 
-          {/* Indicadores de anexos e membros */}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1 text-blue-600">
               <Paperclip className="h-3 w-3" />
@@ -307,6 +309,9 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
         onClose={() => setIsDetailModalOpen(false)}
         card={card}
         onUpdateCard={onUpdateCard}
+        columns={columns}
+        onMoveCard={onMoveCard}
+        onCopyCard={onCopyCard}
       />
 
       <ShareCardModal
@@ -335,6 +340,9 @@ interface OneBoardColumnProps {
   onAddCard: (columnId: string, title: string) => void;
   onUpdateCard: (cardId: string, updates: Partial<BoardCard>) => void;
   onDeleteCard: (cardId: string) => void;
+  columns?: BoardColumn[];
+  onMoveCard?: (cardId: string, targetColumnId: string, position: number) => void;
+  onCopyCard?: (card: BoardCard, targetColumnId: string, position: number, newTitle: string, copyOptions: any) => void;
 }
 
 export function OneBoardColumn({
@@ -343,7 +351,10 @@ export function OneBoardColumn({
   onDeleteColumn,
   onAddCard,
   onUpdateCard,
-  onDeleteCard
+  onDeleteCard,
+  columns = [],
+  onMoveCard,
+  onCopyCard
 }: OneBoardColumnProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(column.title);
@@ -453,6 +464,9 @@ export function OneBoardColumn({
                 card={card}
                 onUpdateCard={onUpdateCard}
                 onDeleteCard={onDeleteCard}
+                columns={columns}
+                onMoveCard={onMoveCard}
+                onCopyCard={onCopyCard}
               />
             ))}
           </SortableContext>

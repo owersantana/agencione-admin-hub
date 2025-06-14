@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
@@ -185,6 +184,84 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
     });
   };
 
+  const moveCard = (cardId: string, targetColumnId: string, position: number) => {
+    const fromColumn = columns.find(col => col.cards.some(card => card.id === cardId));
+    const toColumn = columns.find(col => col.id === targetColumnId);
+    
+    if (!fromColumn || !toColumn) return;
+
+    const card = fromColumn.cards.find(c => c.id === cardId);
+    if (!card) return;
+
+    // Update card's column reference
+    const updatedCard = { ...card, columnId: targetColumnId };
+
+    // If it's the same column, just reorder
+    if (fromColumn.id === targetColumnId) {
+      const newCards = [...fromColumn.cards];
+      const cardIndex = newCards.findIndex(c => c.id === cardId);
+      const [removedCard] = newCards.splice(cardIndex, 1);
+      newCards.splice(position, 0, removedCard);
+      
+      updateColumn(fromColumn.id, {
+        cards: newCards.map((c, index) => ({ ...c, position: index }))
+      });
+    } else {
+      // Move to different column
+      const newColumns = columns.map(col => {
+        if (col.id === fromColumn.id) {
+          // Remove from source column
+          return {
+            ...col,
+            cards: col.cards.filter(c => c.id !== cardId).map((c, index) => ({ ...c, position: index }))
+          };
+        } else if (col.id === targetColumnId) {
+          // Add to target column
+          const newCards = [...col.cards];
+          newCards.splice(position, 0, updatedCard);
+          return {
+            ...col,
+            cards: newCards.map((c, index) => ({ ...c, position: index }))
+          };
+        }
+        return col;
+      });
+      
+      setColumns(newColumns);
+      saveColumnsToStorage(board.id, newColumns);
+    }
+  };
+
+  const copyCard = (originalCard: BoardCard, targetColumnId: string, position: number, newTitle: string, copyOptions: any) => {
+    const targetColumn = columns.find(col => col.id === targetColumnId);
+    if (!targetColumn) return;
+
+    const newCard: BoardCard = {
+      id: crypto.randomUUID(),
+      title: newTitle,
+      columnId: targetColumnId,
+      position: position,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      description: copyOptions.copyDescription ? originalCard.description : undefined,
+      labels: copyOptions.copyLabels ? originalCard.labels : undefined,
+      members: copyOptions.copyMembers ? originalCard.members : undefined,
+      checklists: copyOptions.copyChecklists ? originalCard.checklists : undefined,
+      attachments: copyOptions.copyAttachments ? originalCard.attachments : undefined,
+      dueDate: copyOptions.copyDueDate ? originalCard.dueDate : undefined,
+      priority: originalCard.priority,
+      tags: originalCard.tags,
+    };
+
+    // Insert card at specified position
+    const newCards = [...targetColumn.cards];
+    newCards.splice(position, 0, newCard);
+    
+    updateColumn(targetColumnId, {
+      cards: newCards.map((c, index) => ({ ...c, position: index }))
+    });
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     
@@ -254,7 +331,6 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
     const card = fromColumn.cards.find(c => c.id === cardId);
     if (!card) return;
 
-    // Se é a mesma coluna, apenas reordena
     if (fromColumn.id === toColumnId) {
       const newCards = [...fromColumn.cards];
       const cardIndex = newCards.findIndex(c => c.id === cardId);
@@ -270,19 +346,15 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
       setColumns(newColumns);
       saveColumnsToStorage(board.id, newColumns);
     } else {
-      // Move para coluna diferente
       const updatedCard = { ...card, columnId: toColumnId };
       
-      // Remove da coluna de origem e adiciona na coluna de destino
       const newColumns = columns.map(col => {
         if (col.id === fromColumn.id) {
-          // Remove o card da coluna de origem
           return {
             ...col,
             cards: col.cards.filter(c => c.id !== cardId).map((c, index) => ({ ...c, position: index }))
           };
         } else if (col.id === toColumnId) {
-          // Adiciona o card na coluna de destino
           const newCards = [...col.cards];
           newCards.splice(newPosition, 0, updatedCard);
           return {
@@ -326,6 +398,9 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
                     onAddCard={addCard}
                     onUpdateCard={updateCard}
                     onDeleteCard={deleteCard}
+                    columns={columns}
+                    onMoveCard={moveCard}
+                    onCopyCard={copyCard}
                   />
                 ))}
               </SortableContext>
