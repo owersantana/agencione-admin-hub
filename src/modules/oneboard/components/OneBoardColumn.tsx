@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Trash2, Edit, MoreHorizontal, Calendar, List } from 'lucide-react';
+import { Plus, Trash2, Edit, MoreHorizontal, Calendar, List, Paperclip, Users } from 'lucide-react';
 import { BoardColumn, BoardCard } from '../config';
 import { CardDetailModal } from './CardDetailModal';
 import { useSortable } from '@dnd-kit/sortable';
@@ -88,6 +87,10 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
       default: return '';
     }
   };
+
+  // Calcular totais de anexos e membros do card
+  const totalAttachments = card.attachments?.length || 0;
+  const totalMembers = card.members?.length || 0;
 
   return (
     <>
@@ -245,6 +248,18 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
                 {card.checklists.reduce((total, cl) => total + cl.items.length, 0)}
               </div>
             )}
+          </div>
+
+          {/* Indicadores de anexos e membros */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1 text-blue-600">
+              <Paperclip className="h-3 w-3" />
+              <span>{totalAttachments}</span>
+            </div>
+            <div className="flex items-center gap-1 text-green-600">
+              <Users className="h-3 w-3" />
+              <span>{totalMembers}</span>
+            </div>
           </div>
         </div>
       </Card>
