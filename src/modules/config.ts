@@ -59,6 +59,14 @@ export const AVAILABLE_MODULES: ModuleConfig[] = [
     routes: ["/dashboard/oneboard"]
   },
   {
+    id: "onemap",
+    name: "OneMap",
+    description: "Sistema de mapas mentais e brainstorming",
+    enabled: true,
+    icon: "map",
+    routes: ["/dashboard/onemap"]
+  },
+  {
     id: "marketing",
     name: "Marketing",
     description: "Campanhas e automação de marketing",
