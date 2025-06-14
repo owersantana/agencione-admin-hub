@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
@@ -34,12 +35,21 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
   const [isConnecting, setIsConnecting] = useState(false);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  // Ensure all nodes have proper position properties
+  // Ensure all nodes have proper position properties and default values
   const initialNodes = useMemo(() => {
     if (!map?.nodes) return [];
     return map.nodes.map(node => ({
       ...node,
-      position: node.position || { x: 400, y: 300 }
+      position: node.position || { x: 400, y: 300 },
+      data: {
+        ...node.data,
+        backgroundColor: node.data.backgroundColor || '#3B82F6',
+        color: node.data.color || '#FFFFFF',
+        fontSize: node.data.fontSize || 14,
+        fontWeight: node.data.fontWeight || 'normal',
+        children: node.data.children || [],
+        isExpanded: node.data.isExpanded !== undefined ? node.data.isExpanded : true,
+      }
     }));
   }, [map?.nodes]);
 
@@ -67,7 +77,16 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     if (map) {
       const safeNodes = map.nodes.map(node => ({
         ...node,
-        position: node.position || { x: 400, y: 300 }
+        position: node.position || { x: 400, y: 300 },
+        data: {
+          ...node.data,
+          backgroundColor: node.data.backgroundColor || '#3B82F6',
+          color: node.data.color || '#FFFFFF',
+          fontSize: node.data.fontSize || 14,
+          fontWeight: node.data.fontWeight || 'normal',
+          children: node.data.children || [],
+          isExpanded: node.data.isExpanded !== undefined ? node.data.isExpanded : true,
+        }
       }));
       setNodes(safeNodes);
       
@@ -200,7 +219,14 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     setNodes((nds) =>
       nds.map((node) =>
         node.id === nodeId
-          ? { ...node, data: { ...node.data, ...updates, updatedAt: new Date().toISOString() } }
+          ? { 
+              ...node, 
+              data: { 
+                ...node.data, 
+                ...updates, 
+                updatedAt: new Date().toISOString() 
+              } 
+            }
           : node
       )
     );
@@ -231,10 +257,10 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     
     if (parentNode && parentNode.position) {
       x = parentNode.position.x + 200;
-      y = parentNode.position.y + (parentNode.data.children.length * 80);
+      y = parentNode.position.y + ((parentNode.data.children?.length || 0) * 80);
     } else if (rootNode && rootNode.position) {
       x = rootNode.position.x + 200;
-      y = rootNode.position.y + (rootNode.data.children.length * 80);
+      y = rootNode.position.y + ((rootNode.data.children?.length || 0) * 80);
     }
 
     const colorIndex = nodes.length % DEFAULT_NODE_COLORS.length;
@@ -266,7 +292,13 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         const targetParentId = parentId || rootNode!.id;
         return updatedNodes.map((node) =>
           node.id === targetParentId
-            ? { ...node, data: { ...node.data, children: [...node.data.children, newNode.id] } }
+            ? { 
+                ...node, 
+                data: { 
+                  ...node.data, 
+                  children: [...(node.data.children || []), newNode.id] 
+                } 
+              }
             : node
         );
       }
@@ -295,7 +327,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     
     toast({
       title: "Nó adicionado",
-      description: "Novo nó criado com sucesso! Use Tab durante a edição para criar nós filhos.",
+      description: "Novo nó criado com sucesso! Duplo clique para editar ou use Tab durante a edição para criar nós filhos.",
     });
   }, [nodes, setNodes, setEdges, toast]);
 

@@ -1,5 +1,5 @@
 
-import React, { useState, memo, useEffect, useRef } from 'react';
+import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ export const MindMapFlowNode = memo(({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(data.text);
   const inputRef = useRef<HTMLInputElement>(null);
+  const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEditText(data.text);
@@ -33,40 +34,49 @@ export const MindMapFlowNode = memo(({
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+      // Small delay to ensure the input is rendered
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.select();
+        }
+      }, 10);
     }
   }, [isEditing]);
 
-  const startEditing = () => {
+  const startEditing = useCallback(() => {
     console.log('Starting edit mode for node:', id);
     setIsEditing(true);
     setEditText(data.text);
-  };
+  }, [id, data.text]);
 
-  const finishEditing = () => {
+  const finishEditing = useCallback(() => {
     console.log('Finishing edit with text:', editText);
     if (editText.trim() && editText.trim() !== data.text) {
       onUpdateNode(id, { text: editText.trim() });
     }
     setIsEditing(false);
-  };
+  }, [editText, data.text, onUpdateNode, id]);
 
-  const cancelEditing = () => {
+  const cancelEditing = useCallback(() => {
     console.log('Canceling edit');
     setEditText(data.text);
     setIsEditing(false);
-  };
+  }, [data.text]);
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleNodeDoubleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Double click detected on node:', id);
-    startEditing();
-  };
+    console.log('Node double click detected');
+    if (!isEditing) {
+      startEditing();
+    }
+  }, [isEditing, startEditing]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    console.log('Key pressed:', e.key);
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    console.log('Key pressed in input:', e.key);
+    
+    // Prevent ReactFlow from handling these keys
     e.stopPropagation();
     
     if (e.key === 'Enter') {
@@ -77,35 +87,61 @@ export const MindMapFlowNode = memo(({
       cancelEditing();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      console.log('Tab pressed, creating child node');
+      console.log('Tab pressed - creating child node');
       finishEditing();
+      // Create child node after a small delay
       setTimeout(() => {
-        console.log('Calling onAddChild for:', id);
+        console.log('Executing onAddChild for node:', id);
         onAddChild(id);
-      }, 50);
+      }, 100);
     }
-  };
+  }, [finishEditing, cancelEditing, onAddChild, id]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEditText(e.target.value);
-  };
+  }, []);
 
-  const handleInputBlur = () => {
-    console.log('Input blurred');
-    finishEditing();
-  };
+  const handleInputBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    console.log('Input lost focus');
+    // Only finish editing if we're not clicking on another part of our node
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (!nodeRef.current?.contains(relatedTarget)) {
+      finishEditing();
+    }
+  }, [finishEditing]);
 
-  const handleEditButtonClick = (e: React.MouseEvent) => {
+  const handleEditButtonClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Edit button clicked');
     startEditing();
-  };
+  }, [startEditing]);
+
+  const handleAddChildClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Add child button clicked');
+    onAddChild(id);
+  }, [onAddChild, id]);
+
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Delete button clicked');
+    onDeleteNode(id);
+  }, [onDeleteNode, id]);
+
+  const handleToggleExpanded = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Toggle expanded clicked');
+    onToggleExpanded(id);
+  }, [onToggleExpanded, id]);
 
   const hasChildren = data.children && data.children.length > 0;
 
   return (
-    <div className="relative group">
+    <div className="relative group" ref={nodeRef}>
       {/* Handles for connections */}
       <Handle type="target" position={Position.Top} className="!bg-gray-400 !border-gray-600" />
       <Handle type="source" position={Position.Bottom} className="!bg-gray-400 !border-gray-600" />
@@ -118,15 +154,16 @@ export const MindMapFlowNode = memo(({
           rounded-lg shadow-md border-2 flex items-center justify-center p-3 min-w-[120px] min-h-[40px]
           ${selected ? 'border-blue-500' : 'border-transparent'}
           ${data.isRoot ? 'shadow-lg' : 'shadow-md'}
-          hover:shadow-lg transition-shadow cursor-pointer
+          hover:shadow-lg transition-shadow
+          ${!isEditing ? 'cursor-pointer' : ''}
         `}
         style={{
-          backgroundColor: data.backgroundColor,
-          color: data.color,
-          fontSize: `${data.fontSize}px`,
-          fontWeight: data.fontWeight,
+          backgroundColor: data.backgroundColor || '#3B82F6',
+          color: data.color || '#FFFFFF',
+          fontSize: `${data.fontSize || 14}px`,
+          fontWeight: data.fontWeight || 'normal',
         }}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={handleNodeDoubleClick}
       >
         {isEditing ? (
           <Input
@@ -135,11 +172,11 @@ export const MindMapFlowNode = memo(({
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDown}
-            className="text-center border-none bg-transparent placeholder-white/70 focus:ring-0 focus:ring-offset-0"
+            className="text-center border-none bg-transparent placeholder-white/70 focus:ring-0 focus:ring-offset-0 focus:outline-none"
             style={{ 
-              color: data.color,
-              fontSize: `${data.fontSize}px`,
-              fontWeight: data.fontWeight
+              color: data.color || '#FFFFFF',
+              fontSize: `${data.fontSize || 14}px`,
+              fontWeight: data.fontWeight || 'normal'
             }}
             placeholder="Digite Tab para criar nó filho"
           />
@@ -147,10 +184,7 @@ export const MindMapFlowNode = memo(({
           <div className="flex items-center space-x-2">
             {hasChildren && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleExpanded(id);
-                }}
+                onClick={handleToggleExpanded}
                 className="text-current opacity-70 hover:opacity-100"
               >
                 {data.isExpanded ? (
@@ -172,10 +206,7 @@ export const MindMapFlowNode = memo(({
             size="sm"
             variant="secondary"
             className="h-6 w-6 p-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddChild(id);
-            }}
+            onClick={handleAddChildClick}
           >
             <Plus className="h-3 w-3" />
           </Button>
@@ -192,10 +223,7 @@ export const MindMapFlowNode = memo(({
               size="sm"
               variant="destructive"
               className="h-6 w-6 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteNode(id);
-              }}
+              onClick={handleDeleteClick}
             >
               <Trash2 className="h-3 w-3" />
             </Button>
