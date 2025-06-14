@@ -1,3 +1,4 @@
+
 export interface OneBoardConfig {
   id: string;
   name: string;
@@ -26,6 +27,7 @@ export interface Board {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  columns?: BoardColumn[];
 }
 
 export interface BoardColumn {

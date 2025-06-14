@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Trash2, Share, Edit, Power } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Eye, Trash2, Share, Edit, Power, Paperclip, Users } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardCardProps {
@@ -15,6 +16,26 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
+
+  // Calcular totais de anexos e membros de todos os cards do board
+  const totalAttachments = board.columns?.reduce((total, column) => {
+    return total + (column.cards?.reduce((cardTotal, card) => {
+      return cardTotal + (card.attachments?.length || 0);
+    }, 0) || 0);
+  }, 0) || 0;
+
+  const totalMembers = board.columns?.reduce((members, column) => {
+    column.cards?.forEach(card => {
+      if (card.members) {
+        card.members.forEach(member => {
+          if (!members.some(m => m.id === member.id)) {
+            members.push(member);
+          }
+        });
+      }
+    });
+    return members;
+  }, [] as any[]).length || 0;
 
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 h-fit">
@@ -44,12 +65,28 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
           {board.description}
         </p>
         
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
           <span>{board.columnsCount} colunas</span>
           <span className="hidden sm:inline">Criado em {formatDate(board.createdAt)}</span>
           <span className="sm:hidden">
             {formatDate(board.createdAt).split('/').slice(0, 2).join('/')}
           </span>
+        </div>
+
+        {/* Indicadores de anexos e membros */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {totalAttachments > 0 && (
+            <div className="flex items-center gap-1">
+              <Paperclip className="h-3 w-3" />
+              <span>{totalAttachments}</span>
+            </div>
+          )}
+          {totalMembers > 0 && (
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>{totalMembers}</span>
+            </div>
+          )}
         </div>
       </CardContent>
 
