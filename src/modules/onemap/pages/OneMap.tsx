@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { OneMapToolbar } from '../components/OneMapToolbar';
 import { OneMapGrid } from '../components/OneMapGrid';
@@ -6,7 +5,8 @@ import { OneMapCanvas } from '../components/OneMapCanvas';
 import { CreateMapModal } from '../components/CreateMapModal';
 import { EditMapModal } from '../components/EditMapModal';
 import { ShareMapModal } from '../components/ShareMapModal';
-import { MindMap } from '../config';
+import { MindMap, MindMapNodeData } from '../config';
+import { Node } from '@xyflow/react';
 
 const STORAGE_KEY = 'onemap-data';
 
@@ -183,30 +183,9 @@ function OneMap() {
   };
 
   const handleCreateMap = (mapData: Omit<MindMap, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => {
-    const rootNode: MindMapNode = {
-      id: 'root',
-      type: 'mindMapNode',
-      position: { x: 400, y: 300 },
-      data: {
-        text: mapData.name || 'Ideia Principal',
-        color: '#FFFFFF',
-        backgroundColor: '#3B82F6',
-        fontSize: 16,
-        fontWeight: 'bold',
-        isRoot: true,
-        children: [],
-        isExpanded: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    };
-
     const newMap: MindMap = {
       ...mapData,
       id: crypto.randomUUID(),
-      nodes: [rootNode],
-      connections: [],
-      viewport: { x: 0, y: 0, zoom: 1 },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: 'current-user'

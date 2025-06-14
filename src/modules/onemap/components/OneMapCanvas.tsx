@@ -14,7 +14,7 @@ import {
   NodeTypes,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { MindMap, MindMapNode, MindMapNodeData, DEFAULT_NODE_COLORS } from '../config';
+import { MindMap, MindMapNodeData, DEFAULT_NODE_COLORS } from '../config';
 import { OneMapCanvasToolbar } from './OneMapCanvasToolbar';
 import { MindMapFlowNode } from './MindMapFlowNode';
 
@@ -29,7 +29,7 @@ const nodeTypes: NodeTypes = {
 };
 
 export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(map?.nodes || []);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<MindMapNodeData>>(map?.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(map?.connections || []);
 
   // Update local state when map changes
@@ -82,7 +82,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     const colorIndex = nodes.length % DEFAULT_NODE_COLORS.length;
     const backgroundColor = DEFAULT_NODE_COLORS[colorIndex];
 
-    const newNode: MindMapNode = {
+    const newNode: Node<MindMapNodeData> = {
       id: crypto.randomUUID(),
       type: 'mindMapNode',
       position: { x, y },
@@ -160,8 +160,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     
     const updatedMap: MindMap = {
       ...map,
-      nodes,
-      connections: edges,
+      nodes: nodes as Node<MindMapNodeData>[],
+      connections: edges.map(edge => ({ ...edge, thickness: 2 })),
       updatedAt: new Date().toISOString(),
     };
     

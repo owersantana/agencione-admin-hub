@@ -1,7 +1,7 @@
 
 import { Node, Edge } from '@xyflow/react';
 
-export interface MindMapNodeData {
+export interface MindMapNodeData extends Record<string, unknown> {
   text: string;
   color: string;
   backgroundColor: string;
@@ -18,7 +18,6 @@ export interface MindMapNodeData {
 export type MindMapNode = Node<MindMapNodeData>;
 
 export interface MindMapConnection extends Edge {
-  style?: 'solid' | 'dashed' | 'dotted';
   thickness: number;
 }
 
@@ -57,4 +56,9 @@ export const DEFAULT_NODE_STYLE = {
   fontWeight: 'normal' as const,
   color: '#FFFFFF',
   backgroundColor: '#3B82F6',
+};
+
+export const CANVAS_CONFIG = {
+  defaultWidth: 1200,
+  defaultHeight: 800,
 };

@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { MindMap, DEFAULT_NODE_STYLE, CANVAS_CONFIG } from '../config';
+import { MindMap, DEFAULT_NODE_STYLE, CANVAS_CONFIG, MindMapNodeData } from '../config';
+import { Node } from '@xyflow/react';
 
 interface CreateMapModalProps {
   isOpen: boolean;
@@ -30,22 +31,25 @@ export function CreateMapModal({ isOpen, onClose, onSubmit }: CreateMapModalProp
     
     if (!name.trim() || !rootNodeText.trim()) return;
 
-    const rootNode = {
+    const rootNode: Node<MindMapNodeData> = {
       id: 'root',
-      text: rootNodeText,
-      x: CANVAS_CONFIG.defaultWidth / 2 - DEFAULT_NODE_STYLE.width / 2,
-      y: CANVAS_CONFIG.defaultHeight / 2 - DEFAULT_NODE_STYLE.height / 2,
-      width: DEFAULT_NODE_STYLE.width + 40,
-      height: DEFAULT_NODE_STYLE.height + 10,
-      color: DEFAULT_NODE_STYLE.color,
-      backgroundColor: DEFAULT_NODE_STYLE.backgroundColor,
-      fontSize: 16,
-      fontWeight: 'bold' as const,
-      isRoot: true,
-      children: [],
-      isExpanded: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      type: 'mindMapNode',
+      position: { 
+        x: CANVAS_CONFIG.defaultWidth / 2 - DEFAULT_NODE_STYLE.width / 2,
+        y: CANVAS_CONFIG.defaultHeight / 2 - DEFAULT_NODE_STYLE.height / 2
+      },
+      data: {
+        text: rootNodeText,
+        color: DEFAULT_NODE_STYLE.color,
+        backgroundColor: DEFAULT_NODE_STYLE.backgroundColor,
+        fontSize: 16,
+        fontWeight: 'bold' as const,
+        isRoot: true,
+        children: [],
+        isExpanded: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
     };
 
     const newMap = {
@@ -53,11 +57,11 @@ export function CreateMapModal({ isOpen, onClose, onSubmit }: CreateMapModalProp
       description: description.trim(),
       nodes: [rootNode],
       connections: [],
-      canvasWidth: CANVAS_CONFIG.defaultWidth,
-      canvasHeight: CANVAS_CONFIG.defaultHeight,
-      zoom: 1,
-      centerX: 0,
-      centerY: 0,
+      viewport: {
+        x: 0,
+        y: 0,
+        zoom: 1,
+      },
       isPublic,
     };
 
