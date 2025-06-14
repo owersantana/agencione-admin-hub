@@ -8,16 +8,20 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Trash2, Edit, MoreHorizontal, Calendar, List, Paperclip, Users } from 'lucide-react';
+import { Plus, Trash2, Edit, MoreHorizontal, Calendar, List, Paperclip, Users, Share, Archive } from 'lucide-react';
 import { BoardColumn, BoardCard } from '../config';
 import { CardDetailModal } from './CardDetailModal';
+import { ConfirmationModal } from './ConfirmationModal';
+import { ShareCardModal } from './ShareCardModal';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useToast } from '@/hooks/use-toast';
 
 interface SortableCardProps {
   card: BoardCard;
@@ -29,6 +33,9 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const {
     attributes,
@@ -68,6 +75,21 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
     if (!isEditing) {
       setIsDetailModalOpen(true);
     }
+  };
+
+  const handleShareCard = () => {
+    setIsShareModalOpen(true);
+  };
+
+  const handleArchiveCard = () => {
+    // Simular arquivamento do card
+    toast({
+      title: "Card arquivado",
+      description: `O card "${card.title}" foi arquivado com sucesso.`
+    });
+    
+    // Aqui você poderia implementar a lógica real de arquivamento
+    // Por exemplo: onUpdateCard(card.id, { archived: true });
   };
 
   const getPriorityColor = (priority?: 'low' | 'medium' | 'high') => {
@@ -166,6 +188,22 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
                   <Edit className="h-3 w-3 mr-2" />
                   Ver detalhes
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  handleShareCard();
+                }}>
+                  <Share className="h-3 w-3 mr-2" />
+                  Compartilhar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  setIsArchiveModalOpen(true);
+                }}>
+                  <Archive className="h-3 w-3 mr-2" />
+                  Arquivar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={(e) => {
                     e.stopPropagation();
@@ -269,6 +307,22 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
         onClose={() => setIsDetailModalOpen(false)}
         card={card}
         onUpdateCard={onUpdateCard}
+      />
+
+      <ShareCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        cardTitle={card.title}
+      />
+
+      <ConfirmationModal
+        isOpen={isArchiveModalOpen}
+        onClose={() => setIsArchiveModalOpen(false)}
+        onConfirm={handleArchiveCard}
+        title="Arquivar Card"
+        description={`Tem certeza que deseja arquivar o card "${card.title}"? Você poderá restaurá-lo posteriormente.`}
+        confirmText="Arquivar"
+        cancelText="Cancelar"
       />
     </>
   );
