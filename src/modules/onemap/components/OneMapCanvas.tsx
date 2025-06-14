@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
@@ -50,8 +51,12 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       source: conn.source,
       target: conn.target,
       type: conn.type || 'smoothstep',
-      animated: conn.animated || false,
-      style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
+      animated: false,
+      style: { 
+        stroke: '#E5E7EB', 
+        strokeWidth: 1,
+        strokeOpacity: 0.6
+      },
     }));
   }, [map?.connections]);
 
@@ -72,8 +77,12 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         source: conn.source,
         target: conn.target,
         type: conn.type || 'smoothstep',
-        animated: conn.animated || false,
-        style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
+        animated: false,
+        style: { 
+          stroke: '#E5E7EB', 
+          strokeWidth: 1,
+          strokeOpacity: 0.6
+        },
       })) || [];
       setEdges(safeEdges);
     }
@@ -92,8 +101,12 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         ...params,
         id: crypto.randomUUID(),
         type: 'smoothstep',
-        animated: true,
-        style: { stroke: sourceNode.data.backgroundColor, strokeWidth: 2 },
+        animated: false,
+        style: { 
+          stroke: '#E5E7EB', 
+          strokeWidth: 1,
+          strokeOpacity: 0.6
+        },
       };
       
       setEdges((eds) => addEdge(newEdge, eds));
@@ -147,27 +160,6 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       });
     }
   }, [isConnecting, toast]);
-
-  // Update local state when map changes
-  React.useEffect(() => {
-    if (map) {
-      const safeNodes = map.nodes.map(node => ({
-        ...node,
-        position: node.position || { x: 400, y: 300 }
-      }));
-      setNodes(safeNodes);
-      
-      const safeEdges = map.connections?.map(conn => ({
-        id: conn.id,
-        source: conn.source,
-        target: conn.target,
-        type: conn.type || 'smoothstep',
-        animated: conn.animated || false,
-        style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
-      })) || [];
-      setEdges(safeEdges);
-    }
-  }, [map, setNodes, setEdges]);
 
   const handleNodeUpdate = useCallback((nodeId: string, updates: Partial<MindMapNodeData>) => {
     setNodes((nds) =>
@@ -238,8 +230,12 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         source: targetParentId,
         target: newNode.id,
         type: 'smoothstep',
-        animated: true,
-        style: { stroke: backgroundColor, strokeWidth: 2 },
+        animated: false,
+        style: { 
+          stroke: '#E5E7EB', 
+          strokeWidth: 1,
+          strokeOpacity: 0.6
+        },
       };
       setEdges((eds) => [...eds, newEdge]);
     }
@@ -293,9 +289,13 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       nodes: nodes as Node<MindMapNodeData>[],
       connections: edges.map(edge => ({ 
         ...edge, 
-        thickness: 2,
+        thickness: 1,
         type: edge.type || 'smoothstep',
-        style: edge.style || { stroke: '#3B82F6', strokeWidth: 2 }
+        style: { 
+          stroke: '#E5E7EB', 
+          strokeWidth: 1,
+          strokeOpacity: 0.6
+        }
       })),
       updatedAt: new Date().toISOString(),
     };
