@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -196,12 +195,12 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
-        <div className="flex h-full">
+      <DialogContent className="max-w-6xl max-h-[95vh] min-h-[600px] overflow-hidden p-0 flex flex-col">
+        <div className="flex h-full min-h-0">
           {/* Main Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 flex flex-col min-h-0">
             {card.coverImage && (
-              <div className="mb-4 -mx-6 -mt-6">
+              <div className="flex-shrink-0">
                 <img
                   src={card.coverImage}
                   alt="Capa do card"
@@ -210,187 +209,189 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
               </div>
             )}
 
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-xl">{card.title}</DialogTitle>
-            </DialogHeader>
+            <div className="flex-1 p-6 overflow-y-auto min-h-0">
+              <DialogHeader className="mb-6">
+                <DialogTitle className="text-xl">{card.title}</DialogTitle>
+              </DialogHeader>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="card-title">Título</Label>
-                <Input
-                  id="card-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Título do card"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="card-description">Descrição</Label>
-                <Textarea
-                  id="card-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Descrição do card"
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Prioridade</Label>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant={!card.priority ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setPriority(undefined)}
-                  >
-                    Nenhuma
-                  </Button>
-                  {(['low', 'medium', 'high'] as const).map((priority) => (
-                    <Button
-                      key={priority}
-                      variant={card.priority === priority ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setPriority(priority)}
-                    >
-                      {getPriorityText(priority)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Labels Display */}
-              {card.labels && card.labels.length > 0 && (
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label>Etiquetas</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {card.labels.map((label) => (
-                      <Badge 
-                        key={label.id}
-                        style={{ backgroundColor: label.color, color: 'white' }}
-                      >
-                        {label.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {card.tags && card.tags.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Tags</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {card.tags?.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        <Tag className="h-3 w-3" />
-                        {tag}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => removeTag(tag)}
-                        >
-                          <X className="h-2 w-2" />
-                        </Button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Nova tag"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addTag();
-                        }
-                      }}
-                    />
-                    <Button onClick={addTag} size="sm">
-                      Adicionar
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Checklists Display */}
-              {card.checklists && card.checklists.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Checklists</Label>
-                  <ChecklistManager
-                    checklists={card.checklists}
-                    onUpdateChecklists={handleUpdateChecklists}
+                  <Label htmlFor="card-title">Título</Label>
+                  <Input
+                    id="card-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Título do card"
                   />
                 </div>
-              )}
 
-              {/* Due Date Display */}
-              {card.dueDate && (
                 <div className="space-y-2">
-                  <Label>Data de vencimento</Label>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(card.dueDate).toLocaleDateString('pt-BR')}
+                  <Label htmlFor="card-description">Descrição</Label>
+                  <Textarea
+                    id="card-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descrição do card"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Prioridade</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant={!card.priority ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setPriority(undefined)}
+                    >
+                      Nenhuma
+                    </Button>
+                    {(['low', 'medium', 'high'] as const).map((priority) => (
+                      <Button
+                        key={priority}
+                        variant={card.priority === priority ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setPriority(priority)}
+                      >
+                        {getPriorityText(priority)}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {/* Comments Section */}
-              <div className="space-y-4 border-t pt-6">
-                <Label className="text-base font-semibold">Atividade</Label>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="comment">Escrever um comentário</Label>
-                  <div className="flex gap-2">
-                    <Textarea
-                      id="comment"
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="Escrever um comentário..."
-                      rows={3}
-                      className="flex-1"
+                {/* Labels Display */}
+                {card.labels && card.labels.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Etiquetas</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {card.labels.map((label) => (
+                        <Badge 
+                          key={label.id}
+                          style={{ backgroundColor: label.color, color: 'white' }}
+                        >
+                          {label.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {card.tags && card.tags.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Tags</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {card.tags?.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                          <Tag className="h-3 w-3" />
+                          {tag}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => removeTag(tag)}
+                          >
+                            <X className="h-2 w-2" />
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        placeholder="Nova tag"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addTag();
+                          }
+                        }}
+                      />
+                      <Button onClick={addTag} size="sm">
+                        Adicionar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Checklists Display */}
+                {card.checklists && card.checklists.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Checklists</Label>
+                    <ChecklistManager
+                      checklists={card.checklists}
+                      onUpdateChecklists={handleUpdateChecklists}
                     />
                   </div>
-                  <Button onClick={addComment} size="sm" disabled={!comment.trim()}>
-                    Comentar
+                )}
+
+                {/* Due Date Display */}
+                {card.dueDate && (
+                  <div className="space-y-2">
+                    <Label>Data de vencimento</Label>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(card.dueDate).toLocaleDateString('pt-BR')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Comments Section */}
+                <div className="space-y-4 border-t pt-6">
+                  <Label className="text-base font-semibold">Atividade</Label>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="comment">Escrever um comentário</Label>
+                    <div className="flex gap-2">
+                      <Textarea
+                        id="comment"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Escrever um comentário..."
+                        rows={3}
+                        className="flex-1"
+                      />
+                    </div>
+                    <Button onClick={addComment} size="sm" disabled={!comment.trim()}>
+                      Comentar
+                    </Button>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="space-y-3">
+                    {comments.map((commentItem) => (
+                      <div key={commentItem.id} className="bg-muted p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-medium text-sm">{commentItem.author}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(commentItem.createdAt).toLocaleDateString('pt-BR')} às {new Date(commentItem.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-sm">{commentItem.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarDays className="h-4 w-4" />
+                    Criado em {new Date(card.createdAt).toLocaleDateString('pt-BR')}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarDays className="h-4 w-4" />
+                    Atualizado em {new Date(card.updatedAt).toLocaleDateString('pt-BR')}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                  <Button variant="outline" onClick={onClose}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleSave}>
+                    Salvar
                   </Button>
                 </div>
-
-                {/* Comments List */}
-                <div className="space-y-3">
-                  {comments.map((commentItem) => (
-                    <div key={commentItem.id} className="bg-muted p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-medium text-sm">{commentItem.author}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(commentItem.createdAt).toLocaleDateString('pt-BR')} às {new Date(commentItem.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-sm">{commentItem.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  Criado em {new Date(card.createdAt).toLocaleDateString('pt-BR')}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  Atualizado em {new Date(card.updatedAt).toLocaleDateString('pt-BR')}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                <Button variant="outline" onClick={onClose}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleSave}>
-                  Salvar
-                </Button>
               </div>
             </div>
           </div>
