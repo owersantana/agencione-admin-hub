@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Save, Trash2, Undo, Redo } from 'lucide-react';
+import { Plus, Save, Trash2, Undo, Redo, Link } from 'lucide-react';
 
 interface OneMapCanvasToolbarProps {
   onAddNode: () => void;
@@ -10,6 +10,8 @@ interface OneMapCanvasToolbarProps {
   onDeleteNode?: () => void;
   zoom?: number;
   onZoom?: (delta: number) => void;
+  isConnecting?: boolean;
+  onToggleConnect?: () => void;
 }
 
 export function OneMapCanvasToolbar({
@@ -17,6 +19,8 @@ export function OneMapCanvasToolbar({
   onSave,
   selectedNodeId,
   onDeleteNode,
+  isConnecting = false,
+  onToggleConnect,
 }: OneMapCanvasToolbarProps) {
   return (
     <div className="flex items-center justify-between p-2 border-b border-border bg-background">
@@ -25,6 +29,17 @@ export function OneMapCanvasToolbar({
           <Plus className="h-4 w-4 mr-1" />
           Adicionar Nó
         </Button>
+        
+        {onToggleConnect && (
+          <Button 
+            variant={isConnecting ? "default" : "outline"} 
+            size="sm" 
+            onClick={onToggleConnect}
+          >
+            <Link className="h-4 w-4 mr-1" />
+            {isConnecting ? 'Cancelar Conexão' : 'Conectar Nós'}
+          </Button>
+        )}
         
         {selectedNodeId && onDeleteNode && (
           <Button variant="outline" size="sm" onClick={onDeleteNode}>

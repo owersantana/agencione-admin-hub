@@ -1,5 +1,4 @@
-
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -18,6 +17,7 @@ import '@xyflow/react/dist/style.css';
 import { MindMap, MindMapNodeData, DEFAULT_NODE_COLORS } from '../config';
 import { OneMapCanvasToolbar } from './OneMapCanvasToolbar';
 import { MindMapFlowNode } from './MindMapFlowNode';
+import { useToast } from '@/hooks/use-toast';
 
 interface OneMapCanvasProps {
   map: MindMap | null;
@@ -30,6 +30,10 @@ const nodeTypes: NodeTypes = {
 };
 
 export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProps) {
+  const { toast } = useToast();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
   // Ensure all nodes have proper position properties
   const initialNodes = useMemo(() => {
     if (!map?.nodes) return [];
@@ -77,17 +81,91 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
 
   const onConnect = useCallback(
     (params: Connection) => {
+      if (!params.source || !params.target) return;
+      
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+      
+      if (!sourceNode || !targetNode) return;
+
       const newEdge: Edge = {
         ...params,
         id: crypto.randomUUID(),
         type: 'smoothstep',
         animated: true,
-        style: { stroke: '#3B82F6', strokeWidth: 2 },
+        style: { stroke: sourceNode.data.backgroundColor, strokeWidth: 2 },
       };
+      
       setEdges((eds) => addEdge(newEdge, eds));
+      
+      toast({
+        title: "Conexão criada",
+        description: `Nós conectados com sucesso!`,
+      });
     },
-    [setEdges]
+    [nodes, setEdges, toast]
   );
+
+  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    if (isConnecting) {
+      if (!selectedNodeId) {
+        setSelectedNodeId(node.id);
+        toast({
+          title: "Nó selecionado",
+          description: "Clique em outro nó para criar a conexão",
+        });
+      } else if (selectedNodeId !== node.id) {
+        // Create connection
+        const params: Connection = {
+          source: selectedNodeId,
+          target: node.id,
+        };
+        onConnect(params);
+        setSelectedNodeId(null);
+        setIsConnecting(false);
+      }
+    } else {
+      setSelectedNodeId(selectedNodeId === node.id ? null : node.id);
+    }
+  }, [isConnecting, selectedNodeId, onConnect, toast]);
+
+  const handleToggleConnect = useCallback(() => {
+    setIsConnecting(!isConnecting);
+    setSelectedNodeId(null);
+    
+    if (!isConnecting) {
+      toast({
+        title: "Modo de conexão ativado",
+        description: "Clique em dois nós para conectá-los",
+      });
+    } else {
+      toast({
+        title: "Modo de conexão desativado",
+        description: "",
+      });
+    }
+  }, [isConnecting, toast]);
+
+  // Update local state when map changes
+  React.useEffect(() => {
+    if (map) {
+      const safeNodes = map.nodes.map(node => ({
+        ...node,
+        position: node.position || { x: 400, y: 300 }
+      }));
+      setNodes(safeNodes);
+      
+      const safeEdges = map.connections?.map(conn => ({
+        id: conn.id,
+        source: conn.source,
+        target: conn.target,
+        type: conn.type || 'smoothstep',
+        animated: conn.animated || false,
+        style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
+      })) || [];
+      setEdges(safeEdges);
+    }
+  }, [map, setNodes, setEdges]);
 
   const handleNodeUpdate = useCallback((nodeId: string, updates: Partial<MindMapNodeData>) => {
     setNodes((nds) =>
@@ -139,7 +217,6 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     setNodes((nds) => {
       const updatedNodes = [...nds, newNode];
       
-      // Update parent's children list
       if (parentId || rootNode) {
         const targetParentId = parentId || rootNode!.id;
         return updatedNodes.map((node) =>
@@ -152,7 +229,6 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       return updatedNodes;
     });
 
-    // Create connection to parent
     if (parentId || rootNode) {
       const targetParentId = parentId || rootNode!.id;
       const newEdge: Edge = {
@@ -165,18 +241,26 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       };
       setEdges((eds) => [...eds, newEdge]);
     }
-  }, [nodes, setNodes, setEdges]);
+    
+    toast({
+      title: "Nó adicionado",
+      description: "Novo nó criado com sucesso!",
+    });
+  }, [nodes, setNodes, setEdges, toast]);
 
   const handleDeleteNode = useCallback((nodeId: string) => {
     const nodeToDelete = nodes.find(n => n.id === nodeId);
     if (!nodeToDelete || nodeToDelete.data.isRoot) {
       if (nodeToDelete?.data.isRoot) {
-        alert('Não é possível excluir o nó raiz');
+        toast({
+          title: "Erro",
+          description: "Não é possível excluir o nó raiz",
+          variant: "destructive",
+        });
       }
       return;
     }
 
-    // Remove node and its connections
     setNodes((nds) => 
       nds.filter(n => n.id !== nodeId).map(node => ({
         ...node,
@@ -188,7 +272,16 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     );
     
     setEdges((eds) => eds.filter(e => e.source !== nodeId && e.target !== nodeId));
-  }, [nodes, setNodes, setEdges]);
+    
+    if (selectedNodeId === nodeId) {
+      setSelectedNodeId(null);
+    }
+    
+    toast({
+      title: "Nó removido",
+      description: "Nó excluído com sucesso!",
+    });
+  }, [nodes, setNodes, setEdges, selectedNodeId, toast]);
 
   const handleSave = useCallback(() => {
     if (!map) return;
@@ -206,7 +299,12 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     };
     
     onMapUpdate(updatedMap);
-  }, [map, nodes, edges, onMapUpdate]);
+    
+    toast({
+      title: "Mapa salvo",
+      description: "Suas alterações foram salvas com sucesso!",
+    });
+  }, [map, nodes, edges, onMapUpdate, toast]);
 
   // Enhanced node types with our custom props
   const enhancedNodeTypes = useMemo(() => ({
@@ -240,17 +338,26 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         onZoom={() => {}}
         onAddNode={() => handleAddNode()}
         onSave={handleSave}
-        selectedNodeId={null}
-        onDeleteNode={undefined}
+        selectedNodeId={selectedNodeId}
+        onDeleteNode={selectedNodeId ? () => handleDeleteNode(selectedNodeId) : undefined}
+        isConnecting={isConnecting}
+        onToggleConnect={handleToggleConnect}
       />
 
       <div className="flex-1">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodes.map(node => ({
+            ...node,
+            style: {
+              ...node.style,
+              border: selectedNodeId === node.id ? '2px solid #3B82F6' : node.style?.border,
+            }
+          }))}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           nodeTypes={enhancedNodeTypes}
           fitView
           attributionPosition="top-right"
