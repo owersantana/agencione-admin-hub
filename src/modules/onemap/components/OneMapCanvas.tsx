@@ -30,30 +30,48 @@ const nodeTypes: NodeTypes = {
 };
 
 export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<MindMapNodeData>>(map?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
-    map?.connections?.map(conn => ({
+  // Ensure all nodes have proper position properties
+  const initialNodes = useMemo(() => {
+    if (!map?.nodes) return [];
+    return map.nodes.map(node => ({
+      ...node,
+      position: node.position || { x: 400, y: 300 }
+    }));
+  }, [map?.nodes]);
+
+  const initialEdges = useMemo(() => {
+    if (!map?.connections) return [];
+    return map.connections.map(conn => ({
       id: conn.id,
       source: conn.source,
       target: conn.target,
-      type: conn.type,
-      animated: conn.animated,
-      style: conn.style,
-    })) || []
-  );
+      type: conn.type || 'smoothstep',
+      animated: conn.animated || false,
+      style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
+    }));
+  }, [map?.connections]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<MindMapNodeData>>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
   // Update local state when map changes
   React.useEffect(() => {
     if (map) {
-      setNodes(map.nodes);
-      setEdges(map.connections?.map(conn => ({
+      const safeNodes = map.nodes.map(node => ({
+        ...node,
+        position: node.position || { x: 400, y: 300 }
+      }));
+      setNodes(safeNodes);
+      
+      const safeEdges = map.connections?.map(conn => ({
         id: conn.id,
         source: conn.source,
         target: conn.target,
-        type: conn.type,
-        animated: conn.animated,
-        style: conn.style,
-      })) || []);
+        type: conn.type || 'smoothstep',
+        animated: conn.animated || false,
+        style: conn.style || { stroke: '#3B82F6', strokeWidth: 2 },
+      })) || [];
+      setEdges(safeEdges);
     }
   }, [map, setNodes, setEdges]);
 
@@ -88,10 +106,10 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     let x = 400;
     let y = 300;
     
-    if (parentNode) {
+    if (parentNode && parentNode.position) {
       x = parentNode.position.x + 200;
       y = parentNode.position.y + (parentNode.data.children.length * 80);
-    } else if (rootNode) {
+    } else if (rootNode && rootNode.position) {
       x = rootNode.position.x + 200;
       y = rootNode.position.y + (rootNode.data.children.length * 80);
     }
