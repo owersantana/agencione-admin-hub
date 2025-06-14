@@ -11,8 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move } from 'lucide-react';
-import { BoardCard } from '../config';
+import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image } from 'lucide-react';
+import { BoardCard, Label as LabelType, Checklist } from '../config';
+import { LabelManager } from './LabelManager';
+import { ChecklistManager } from './ChecklistManager';
+import { DatePicker } from './DatePicker';
+import { CoverImageSelector } from './CoverImageSelector';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -27,6 +31,7 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
   const [newTag, setNewTag] = useState('');
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Array<{id: string, text: string, author: string, createdAt: string}>>([]);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (card) {
@@ -89,17 +94,101 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
     }
   };
 
+  const handleAddLabel = (label: LabelType) => {
+    onUpdateCard(card.id, {
+      labels: [...(card.labels || []), label]
+    });
+  };
+
+  const handleRemoveLabel = (labelId: string) => {
+    onUpdateCard(card.id, {
+      labels: card.labels?.filter(label => label.id !== labelId) || []
+    });
+  };
+
+  const handleUpdateChecklists = (checklists: Checklist[]) => {
+    onUpdateCard(card.id, { checklists });
+  };
+
+  const handleDateChange = (date: string | undefined) => {
+    onUpdateCard(card.id, { dueDate: date });
+  };
+
+  const handleCoverImageChange = (url: string | undefined) => {
+    onUpdateCard(card.id, { coverImage: url });
+  };
+
   const sidebarActions = [
-    { icon: User, label: 'Membros', section: 'add', action: () => console.log('Membros') },
-    { icon: Tag, label: 'Etiquetas', section: 'add', action: () => console.log('Etiquetas') },
-    { icon: List, label: 'Checklist', section: 'add', action: () => console.log('Checklist') },
-    { icon: Calendar, label: 'Datas', section: 'add', action: () => console.log('Datas') },
-    { icon: Paperclip, label: 'Anexo', section: 'add', action: () => console.log('Anexo') },
-    { icon: Tag, label: 'Capa', section: 'add', action: () => console.log('Capa') },
-    { icon: Move, label: 'Mover', section: 'actions', action: () => console.log('Mover') },
-    { icon: Copy, label: 'Copiar', section: 'actions', action: () => console.log('Copiar') },
-    { icon: Archive, label: 'Arquivar', section: 'actions', action: () => console.log('Arquivar') },
-    { icon: Share, label: 'Compartilhar', section: 'actions', action: () => console.log('Compartilhar') },
+    { 
+      icon: User, 
+      label: 'Membros', 
+      section: 'add', 
+      action: () => console.log('Membros'),
+      key: 'members'
+    },
+    { 
+      icon: Tag, 
+      label: 'Etiquetas', 
+      section: 'add', 
+      action: () => setActiveSection(activeSection === 'labels' ? null : 'labels'),
+      key: 'labels'
+    },
+    { 
+      icon: List, 
+      label: 'Checklist', 
+      section: 'add', 
+      action: () => setActiveSection(activeSection === 'checklist' ? null : 'checklist'),
+      key: 'checklist'
+    },
+    { 
+      icon: Calendar, 
+      label: 'Datas', 
+      section: 'add', 
+      action: () => setActiveSection(activeSection === 'dates' ? null : 'dates'),
+      key: 'dates'
+    },
+    { 
+      icon: Paperclip, 
+      label: 'Anexo', 
+      section: 'add', 
+      action: () => console.log('Anexo'),
+      key: 'attachment'
+    },
+    { 
+      icon: Image, 
+      label: 'Capa', 
+      section: 'add', 
+      action: () => setActiveSection(activeSection === 'cover' ? null : 'cover'),
+      key: 'cover'
+    },
+    { 
+      icon: Move, 
+      label: 'Mover', 
+      section: 'actions', 
+      action: () => console.log('Mover'),
+      key: 'move'
+    },
+    { 
+      icon: Copy, 
+      label: 'Copiar', 
+      section: 'actions', 
+      action: () => console.log('Copiar'),
+      key: 'copy'
+    },
+    { 
+      icon: Archive, 
+      label: 'Arquivar', 
+      section: 'actions', 
+      action: () => console.log('Arquivar'),
+      key: 'archive'
+    },
+    { 
+      icon: Share, 
+      label: 'Compartilhar', 
+      section: 'actions', 
+      action: () => console.log('Compartilhar'),
+      key: 'share'
+    },
   ];
 
   const addActions = sidebarActions.filter(action => action.section === 'add');
@@ -107,10 +196,20 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
         <div className="flex h-full">
           {/* Main Content Area */}
           <div className="flex-1 p-6 overflow-y-auto">
+            {card.coverImage && (
+              <div className="mb-4 -mx-6 -mt-6">
+                <img
+                  src={card.coverImage}
+                  alt="Capa do card"
+                  className="w-full h-32 object-cover"
+                />
+              </div>
+            )}
+
             <DialogHeader className="mb-6">
               <DialogTitle className="text-xl">{card.title}</DialogTitle>
             </DialogHeader>
@@ -160,41 +259,82 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Tags</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {card.tags?.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                      <Tag className="h-3 w-3" />
-                      {tag}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => removeTag(tag)}
+              {/* Labels Display */}
+              {card.labels && card.labels.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Etiquetas</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {card.labels.map((label) => (
+                      <Badge 
+                        key={label.id}
+                        style={{ backgroundColor: label.color, color: 'white' }}
                       >
-                        <X className="h-2 w-2" />
-                      </Button>
-                    </Badge>
-                  ))}
+                        {label.name}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <Input
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    placeholder="Nova tag"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addTag();
-                      }
-                    }}
+              )}
+
+              {card.tags && card.tags.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Tags</Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {card.tags?.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        <Tag className="h-3 w-3" />
+                        {tag}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => removeTag(tag)}
+                        >
+                          <X className="h-2 w-2" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Nova tag"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addTag();
+                        }
+                      }}
+                    />
+                    <Button onClick={addTag} size="sm">
+                      Adicionar
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Checklists Display */}
+              {card.checklists && card.checklists.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Checklists</Label>
+                  <ChecklistManager
+                    checklists={card.checklists}
+                    onUpdateChecklists={handleUpdateChecklists}
                   />
-                  <Button onClick={addTag} size="sm">
-                    Adicionar
-                  </Button>
                 </div>
-              </div>
+              )}
+
+              {/* Due Date Display */}
+              {card.dueDate && (
+                <div className="space-y-2">
+                  <Label>Data de vencimento</Label>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(card.dueDate).toLocaleDateString('pt-BR')}
+                  </div>
+                </div>
+              )}
 
               {/* Comments Section */}
               <div className="space-y-4 border-t pt-6">
@@ -256,41 +396,85 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
           </div>
 
           {/* Sidebar */}
-          <div className="w-52 bg-muted/30 border-l p-4 overflow-y-auto">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Adicionar ao card
-              </Label>
-              {addActions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
-                  onClick={action.action}
-                >
-                  <action.icon className="h-4 w-4 mr-3" />
-                  {action.label}
-                </Button>
-              ))}
-            </div>
+          <div className="w-80 bg-muted/30 border-l flex flex-col">
+            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Adicionar ao card
+                </Label>
+                {addActions.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant={activeSection === action.key ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
+                    onClick={action.action}
+                  >
+                    <action.icon className="h-4 w-4 mr-3" />
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
 
-            <div className="space-y-2 mt-6">
-              <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Ações
-              </Label>
-              {actionsList.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
-                  onClick={action.action}
-                >
-                  <action.icon className="h-4 w-4 mr-3" />
-                  {action.label}
-                </Button>
-              ))}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Ações
+                </Label>
+                {actionsList.map((action, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-sm h-9 bg-background hover:bg-muted transition-colors"
+                    onClick={action.action}
+                  >
+                    <action.icon className="h-4 w-4 mr-3" />
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Active Section Content */}
+              {activeSection === 'labels' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Etiquetas</h4>
+                  <LabelManager
+                    labels={card.labels || []}
+                    onAddLabel={handleAddLabel}
+                    onRemoveLabel={handleRemoveLabel}
+                  />
+                </div>
+              )}
+
+              {activeSection === 'checklist' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Checklist</h4>
+                  <ChecklistManager
+                    checklists={card.checklists || []}
+                    onUpdateChecklists={handleUpdateChecklists}
+                  />
+                </div>
+              )}
+
+              {activeSection === 'dates' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Datas</h4>
+                  <DatePicker
+                    date={card.dueDate}
+                    onDateChange={handleDateChange}
+                  />
+                </div>
+              )}
+
+              {activeSection === 'cover' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Capa</h4>
+                  <CoverImageSelector
+                    coverImage={card.coverImage}
+                    onImageChange={handleCoverImageChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

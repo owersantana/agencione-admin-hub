@@ -37,6 +37,24 @@ export interface BoardColumn {
   cards: BoardCard[];
 }
 
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+export interface Checklist {
+  id: string;
+  title: string;
+  items: ChecklistItem[];
+}
+
 export interface BoardCard {
   id: string;
   title: string;
@@ -47,6 +65,9 @@ export interface BoardCard {
   priority?: 'low' | 'medium' | 'high';
   dueDate?: string;
   tags?: string[];
+  labels?: Label[];
+  checklists?: Checklist[];
+  coverImage?: string;
   comments?: Array<{id: string, text: string, author: string, createdAt: string}>;
   createdAt: string;
   updatedAt: string;

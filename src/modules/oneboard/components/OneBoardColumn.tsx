@@ -96,10 +96,20 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
         style={style}
         {...attributes}
         {...listeners}
-        className="p-2 sm:p-3 cursor-pointer hover:shadow-sm transition-shadow group"
+        className="p-0 cursor-pointer hover:shadow-sm transition-shadow group overflow-hidden"
         onClick={handleSingleClick}
       >
-        <div className="space-y-2">
+        {card.coverImage && (
+          <div className="w-full h-24 overflow-hidden">
+            <img
+              src={card.coverImage}
+              alt="Capa do card"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        
+        <div className="p-2 sm:p-3 space-y-2">
           <div className="flex items-start justify-between gap-2">
             {isEditing ? (
               <Input
@@ -172,6 +182,26 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
               {card.description}
             </p>
           )}
+
+          {/* Labels Display */}
+          {card.labels && card.labels.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {card.labels.slice(0, 3).map((label) => (
+                <span
+                  key={label.id}
+                  className="inline-block text-xs px-2 py-1 rounded-full text-white"
+                  style={{ backgroundColor: label.color }}
+                >
+                  {label.name}
+                </span>
+              ))}
+              {card.labels.length > 3 && (
+                <span className="text-xs text-muted-foreground">
+                  +{card.labels.length - 3}
+                </span>
+              )}
+            </div>
+          )}
           
           <div className="flex items-center justify-between">
             {card.priority && (
@@ -195,6 +225,24 @@ function SortableCard({ card, onUpdateCard, onDeleteCard }: SortableCardProps) {
                     +{card.tags.length - 2}
                   </span>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* Due Date and Checklist Progress */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            {card.dueDate && (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {new Date(card.dueDate).toLocaleDateString('pt-BR')}
+              </div>
+            )}
+            
+            {card.checklists && card.checklists.length > 0 && (
+              <div className="flex items-center gap-1">
+                <List className="h-3 w-3" />
+                {card.checklists.reduce((total, cl) => total + cl.items.filter(i => i.completed).length, 0)}/
+                {card.checklists.reduce((total, cl) => total + cl.items.length, 0)}
               </div>
             )}
           </div>
