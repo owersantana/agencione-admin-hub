@@ -12,6 +12,7 @@ import {
   Node,
   Edge,
   NodeTypes,
+  BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { MindMap, MindMapNodeData, DEFAULT_NODE_COLORS } from '../config';
@@ -30,13 +31,29 @@ const nodeTypes: NodeTypes = {
 
 export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<MindMapNodeData>>(map?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(map?.connections || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    map?.connections?.map(conn => ({
+      id: conn.id,
+      source: conn.source,
+      target: conn.target,
+      type: conn.type,
+      animated: conn.animated,
+      style: conn.style,
+    })) || []
+  );
 
   // Update local state when map changes
   React.useEffect(() => {
     if (map) {
       setNodes(map.nodes);
-      setEdges(map.connections);
+      setEdges(map.connections?.map(conn => ({
+        id: conn.id,
+        source: conn.source,
+        target: conn.target,
+        type: conn.type,
+        animated: conn.animated,
+        style: conn.style,
+      })) || []);
     }
   }, [map, setNodes, setEdges]);
 
@@ -161,7 +178,11 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     const updatedMap: MindMap = {
       ...map,
       nodes: nodes as Node<MindMapNodeData>[],
-      connections: edges.map(edge => ({ ...edge, thickness: 2 })),
+      connections: edges.map(edge => ({ 
+        ...edge, 
+        thickness: 2,
+        style: edge.style || { stroke: '#3B82F6', strokeWidth: 2 }
+      })),
       updatedAt: new Date().toISOString(),
     };
     
@@ -218,7 +239,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         >
           <Controls />
           <MiniMap />
-          <Background variant="cross" gap={12} size={1} />
+          <Background variant={BackgroundVariant.Cross} gap={12} size={1} />
         </ReactFlow>
       </div>
     </div>
