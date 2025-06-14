@@ -1,11 +1,8 @@
 
-export interface MindMapNode {
-  id: string;
+import { Node, Edge } from '@xyflow/react';
+
+export interface MindMapNodeData {
   text: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   color: string;
   backgroundColor: string;
   fontSize: number;
@@ -18,12 +15,10 @@ export interface MindMapNode {
   updatedAt: string;
 }
 
-export interface MindMapConnection {
-  id: string;
-  fromNodeId: string;
-  toNodeId: string;
-  color: string;
-  style: 'solid' | 'dashed' | 'dotted';
+export type MindMapNode = Node<MindMapNodeData>;
+
+export interface MindMapConnection extends Edge {
+  style?: 'solid' | 'dashed' | 'dotted';
   thickness: number;
 }
 
@@ -33,11 +28,11 @@ export interface MindMap {
   description?: string;
   nodes: MindMapNode[];
   connections: MindMapConnection[];
-  canvasWidth: number;
-  canvasHeight: number;
-  zoom: number;
-  centerX: number;
-  centerY: number;
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
@@ -62,12 +57,4 @@ export const DEFAULT_NODE_STYLE = {
   fontWeight: 'normal' as const,
   color: '#FFFFFF',
   backgroundColor: '#3B82F6',
-};
-
-export const CANVAS_CONFIG = {
-  defaultWidth: 2000,
-  defaultHeight: 1500,
-  minZoom: 0.1,
-  maxZoom: 3,
-  gridSize: 20,
 };
