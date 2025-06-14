@@ -17,27 +17,42 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
-  // Calcular totais de anexos e membros de todos os cards do board
-  const totalAttachments = board.columns?.reduce((total, column) => {
-    return total + (column.cards?.reduce((cardTotal, card) => {
-      return cardTotal + (card.attachments?.length || 0);
-    }, 0) || 0);
-  }, 0) || 0;
+  console.log('Board completo:', board);
+  console.log('Board columns:', board.columns);
 
-  // Calcular membros únicos de todos os cards do board
+  // Calcular totais de anexos e membros de todos os cards do board
+  let totalAttachments = 0;
   const uniqueMembers = new Set<string>();
-  board.columns?.forEach(column => {
-    column.cards?.forEach(card => {
-      if (card.members) {
-        card.members.forEach(member => {
-          uniqueMembers.add(member.id);
+
+  if (board.columns && Array.isArray(board.columns)) {
+    board.columns.forEach((column, columnIndex) => {
+      console.log(`Coluna ${columnIndex}:`, column);
+      if (column.cards && Array.isArray(column.cards)) {
+        column.cards.forEach((card, cardIndex) => {
+          console.log(`Card ${cardIndex} da coluna ${columnIndex}:`, card);
+          
+          // Contar anexos
+          if (card.attachments && Array.isArray(card.attachments)) {
+            totalAttachments += card.attachments.length;
+            console.log(`Card ${card.title} tem ${card.attachments.length} anexos`);
+          }
+          
+          // Contar membros únicos
+          if (card.members && Array.isArray(card.members)) {
+            card.members.forEach(member => {
+              uniqueMembers.add(member.id);
+              console.log(`Adicionado membro ${member.name} (${member.id})`);
+            });
+          }
         });
       }
     });
-  });
+  }
+
   const totalMembers = uniqueMembers.size;
 
   console.log(`Board ${board.name}: ${totalAttachments} anexos, ${totalMembers} membros únicos`);
+  console.log('Membros únicos encontrados:', Array.from(uniqueMembers));
 
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 h-fit">
@@ -77,18 +92,16 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
 
         {/* Indicadores de anexos e membros */}
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {totalAttachments > 0 && (
-            <div className="flex items-center gap-1">
-              <Paperclip className="h-3 w-3" />
-              <span>{totalAttachments}</span>
-            </div>
-          )}
-          {totalMembers > 0 && (
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              <span>{totalMembers}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1 text-blue-600">
+            <Paperclip className="h-3 w-3" />
+            <span>{totalAttachments}</span>
+            <span className="text-xs">anexos</span>
+          </div>
+          <div className="flex items-center gap-1 text-green-600">
+            <Users className="h-3 w-3" />
+            <span>{totalMembers}</span>
+            <span className="text-xs">membros</span>
+          </div>
         </div>
       </CardContent>
 
