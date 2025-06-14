@@ -119,6 +119,8 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         const params: Connection = {
           source: selectedNodeId,
           target: node.id,
+          sourceHandle: null,
+          targetHandle: null,
         };
         onConnect(params);
         setSelectedNodeId(null);
