@@ -18,6 +18,7 @@ import { DatePicker } from './DatePicker';
 import { CoverImageSelector } from './CoverImageSelector';
 import { MemberManager } from './MemberManager';
 import { DescriptionEditor } from './DescriptionEditor';
+import { AttachmentManager, Attachment } from './AttachmentManager';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -131,6 +132,18 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
     });
   };
 
+  const handleAddAttachment = (attachment: Attachment) => {
+    onUpdateCard(card.id, {
+      attachments: [...(card.attachments || []), attachment]
+    });
+  };
+
+  const handleRemoveAttachment = (attachmentId: string) => {
+    onUpdateCard(card.id, {
+      attachments: card.attachments?.filter(attachment => attachment.id !== attachmentId) || []
+    });
+  };
+
   const sidebarActions = [
     { 
       icon: User, 
@@ -164,8 +177,8 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
       icon: Paperclip, 
       label: 'Anexo', 
       section: 'add', 
-      action: () => console.log('Anexo'),
-      key: 'attachment'
+      action: () => setActiveSection(activeSection === 'attachments' ? null : 'attachments'),
+      key: 'attachments'
     },
     { 
       icon: Image, 
@@ -368,6 +381,18 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                   </div>
                 )}
 
+                {/* Attachments Display */}
+                {card.attachments && card.attachments.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Anexos ({card.attachments.length})</Label>
+                    <AttachmentManager
+                      attachments={card.attachments}
+                      onAddAttachment={handleAddAttachment}
+                      onRemoveAttachment={handleRemoveAttachment}
+                    />
+                  </div>
+                )}
+
                 {/* Comments Section */}
                 <div className="space-y-4 border-t pt-6">
                   <Label className="text-base font-semibold">Atividade</Label>
@@ -517,6 +542,17 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                   <CoverImageSelector
                     coverImage={card.coverImage}
                     onImageChange={handleCoverImageChange}
+                  />
+                </div>
+              )}
+
+              {activeSection === 'attachments' && (
+                <div className="space-y-2 p-3 border rounded-lg bg-background">
+                  <h4 className="font-medium">Anexos</h4>
+                  <AttachmentManager
+                    attachments={card.attachments || []}
+                    onAddAttachment={handleAddAttachment}
+                    onRemoveAttachment={handleRemoveAttachment}
                   />
                 </div>
               )}

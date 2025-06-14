@@ -61,6 +61,16 @@ export interface Member {
   avatar?: string;
 }
 
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
 export interface BoardCard {
   id: string;
   title: string;
@@ -75,6 +85,7 @@ export interface BoardCard {
   checklists?: Checklist[];
   coverImage?: string;
   members?: Member[];
+  attachments?: Attachment[];
   comments?: Array<{id: string, text: string, author: string, createdAt: string}>;
   createdAt: string;
   updatedAt: string;
