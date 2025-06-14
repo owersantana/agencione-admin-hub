@@ -3,6 +3,7 @@ import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
 import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
 import { CreateColumnInline } from './CreateColumnInline';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import {
   DndContext,
@@ -371,15 +372,19 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-muted/20">
-      <OneBoardCanvasToolbar 
-        board={board}
-        onBoardUpdate={onBoardUpdate}
-        onBoardAction={onBoardAction}
-      />
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-muted/20">
+      {/* Fixed Toolbar */}
+      <div className="flex-shrink-0 sticky top-0 z-10">
+        <OneBoardCanvasToolbar 
+          board={board}
+          onBoardUpdate={onBoardUpdate}
+          onBoardAction={onBoardAction}
+        />
+      </div>
 
+      {/* Scrollable Canvas */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-x-auto">
+        <ScrollArea className="h-full w-full">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}
@@ -433,7 +438,8 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
               )}
             </DragOverlay>
           </DndContext>
-        </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
     </div>
   );
