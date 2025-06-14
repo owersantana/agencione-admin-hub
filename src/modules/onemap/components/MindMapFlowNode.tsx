@@ -44,6 +44,13 @@ export const MindMapFlowNode = memo(({
     } else if (e.key === 'Escape') {
       setIsEditing(false);
       setEditText(data.text);
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      handleEditSubmit();
+      // Criar nó filho após salvar o texto atual
+      setTimeout(() => {
+        onAddChild(id);
+      }, 50);
     }
   };
 
@@ -82,6 +89,7 @@ export const MindMapFlowNode = memo(({
             className="text-center border-none bg-transparent text-white placeholder-white/70"
             style={{ color: data.color }}
             autoFocus
+            placeholder="Digite Tab para criar nó filho"
           />
         ) : (
           <div className="flex items-center space-x-2">

@@ -284,16 +284,19 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         animated: false,
         style: { 
           stroke: '#E5E7EB', 
-          strokeWidth: 1,
-          strokeOpacity: 0.6
+          strokeWidth: 0.8,
+          strokeOpacity: 0.4
         },
       };
       setEdges((eds) => [...eds, newEdge]);
     }
     
+    // Selecionar o novo nó automaticamente
+    setSelectedNodeId(newNode.id);
+    
     toast({
       title: "Nó adicionado",
-      description: "Novo nó criado com sucesso!",
+      description: "Novo nó criado com sucesso! Use Tab durante a edição para criar nós filhos.",
     });
   }, [nodes, setNodes, setEdges, toast]);
 
