@@ -47,6 +47,7 @@ export interface BoardCard {
   priority?: 'low' | 'medium' | 'high';
   dueDate?: string;
   tags?: string[];
+  comments?: Array<{id: string, text: string, author: string, createdAt: string}>;
   createdAt: string;
   updatedAt: string;
 }
