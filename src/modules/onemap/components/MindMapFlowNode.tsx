@@ -3,7 +3,7 @@ import React, { useState, memo } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Trash2, Edit3 } from 'lucide-react';
+import { Plus, Trash2, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
 import { MindMapNodeData } from '../config';
 
 interface MindMapFlowNodeProps extends NodeProps {
@@ -11,6 +11,7 @@ interface MindMapFlowNodeProps extends NodeProps {
   onAddChild: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onUpdateNode: (nodeId: string, updates: Partial<MindMapNodeData>) => void;
+  onToggleExpanded: (nodeId: string) => void;
 }
 
 export const MindMapFlowNode = memo(({
@@ -20,6 +21,7 @@ export const MindMapFlowNode = memo(({
   onAddChild,
   onDeleteNode,
   onUpdateNode,
+  onToggleExpanded,
 }: MindMapFlowNodeProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(data.text);
@@ -44,6 +46,8 @@ export const MindMapFlowNode = memo(({
       setEditText(data.text);
     }
   };
+
+  const hasChildren = data.children && data.children.length > 0;
 
   return (
     <div className="relative group">
@@ -80,7 +84,24 @@ export const MindMapFlowNode = memo(({
             autoFocus
           />
         ) : (
-          <span className="text-center break-words px-2">{data.text}</span>
+          <div className="flex items-center space-x-2">
+            {hasChildren && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleExpanded(id);
+                }}
+                className="text-current opacity-70 hover:opacity-100"
+              >
+                {data.isExpanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronUp className="h-3 w-3" />
+                )}
+              </button>
+            )}
+            <span className="text-center break-words px-2">{data.text}</span>
+          </div>
         )}
       </div>
 

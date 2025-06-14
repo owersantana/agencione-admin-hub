@@ -88,6 +88,42 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
     }
   }, [map, setNodes, setEdges]);
 
+  // Filter nodes and edges based on expanded state
+  const visibleNodes = useMemo(() => {
+    if (!nodes.length) return [];
+    
+    const getVisibleNodeIds = (nodeId: string, visited = new Set()): string[] => {
+      if (visited.has(nodeId)) return [];
+      visited.add(nodeId);
+      
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node) return [];
+      
+      const result = [nodeId];
+      
+      if (node.data.isExpanded && node.data.children) {
+        for (const childId of node.data.children) {
+          result.push(...getVisibleNodeIds(childId, visited));
+        }
+      }
+      
+      return result;
+    };
+    
+    const rootNode = nodes.find(n => n.data.isRoot);
+    if (!rootNode) return nodes;
+    
+    const visibleIds = new Set(getVisibleNodeIds(rootNode.id));
+    return nodes.filter(node => visibleIds.has(node.id));
+  }, [nodes]);
+
+  const visibleEdges = useMemo(() => {
+    const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
+    return edges.filter(edge => 
+      visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    );
+  }, [edges, visibleNodes]);
+
   const onConnect = useCallback(
     (params: Connection) => {
       if (!params.source || !params.target) return;
@@ -170,6 +206,21 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       )
     );
   }, [setNodes]);
+
+  const handleToggleExpanded = useCallback((nodeId: string) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, isExpanded: !node.data.isExpanded } }
+          : node
+      )
+    );
+    
+    toast({
+      title: "Nó atualizado",
+      description: "Estado de expansão alterado",
+    });
+  }, [setNodes, toast]);
 
   const handleAddNode = useCallback((parentId?: string) => {
     const parentNode = parentId ? nodes.find(n => n.id === parentId) : null;
@@ -316,9 +367,10 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         onAddChild={handleAddNode}
         onDeleteNode={handleDeleteNode}
         onUpdateNode={handleNodeUpdate}
+        onToggleExpanded={handleToggleExpanded}
       />
     ),
-  }), [handleAddNode, handleDeleteNode, handleNodeUpdate]);
+  }), [handleAddNode, handleDeleteNode, handleNodeUpdate, handleToggleExpanded]);
 
   if (!map) {
     return (
@@ -348,14 +400,14 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
 
       <div className="flex-1">
         <ReactFlow
-          nodes={nodes.map(node => ({
+          nodes={visibleNodes.map(node => ({
             ...node,
             style: {
               ...node.style,
               border: selectedNodeId === node.id ? '2px solid #3B82F6' : node.style?.border,
             }
           }))}
-          edges={edges}
+          edges={visibleEdges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
