@@ -3,7 +3,6 @@ import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardColumn } from './OneBoardColumn';
 import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
 import { CreateColumnInline } from './CreateColumnInline';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import {
   DndContext,
@@ -384,14 +383,14 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
 
       {/* Scrollable Canvas */}
       <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full w-full">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="h-full overflow-x-auto overflow-y-hidden">
             <div className="flex h-full gap-3 sm:gap-4 p-3 sm:p-4 min-w-max">
               <SortableContext items={columns.map(col => col.id)} strategy={horizontalListSortingStrategy}>
                 {columns.map((column) => (
@@ -412,34 +411,33 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
               
               <CreateColumnInline onCreateColumn={addColumn} />
             </div>
+          </div>
 
-            <DragOverlay>
-              {activeColumn && (
-                <div className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80 opacity-50">
-                  <OneBoardColumn
-                    column={activeColumn}
-                    onUpdateColumn={() => {}}
-                    onDeleteColumn={() => {}}
-                    onAddCard={() => {}}
-                    onUpdateCard={() => {}}
-                    onDeleteCard={() => {}}
-                  />
-                </div>
-              )}
-              {activeCard && (
-                <div className="p-2 sm:p-3 bg-background border rounded-lg shadow-lg opacity-50 min-w-64">
-                  <h4 className="text-sm font-medium">{activeCard.title}</h4>
-                  {activeCard.description && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                      {activeCard.description}
-                    </p>
-                  )}
-                </div>
-              )}
-            </DragOverlay>
-          </DndContext>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+          <DragOverlay>
+            {activeColumn && (
+              <div className="min-w-64 max-w-64 sm:min-w-80 sm:max-w-80 opacity-50">
+                <OneBoardColumn
+                  column={activeColumn}
+                  onUpdateColumn={() => {}}
+                  onDeleteColumn={() => {}}
+                  onAddCard={() => {}}
+                  onUpdateCard={() => {}}
+                  onDeleteCard={() => {}}
+                />
+              </div>
+            )}
+            {activeCard && (
+              <div className="p-2 sm:p-3 bg-background border rounded-lg shadow-lg opacity-50 min-w-64">
+                <h4 className="text-sm font-medium">{activeCard.title}</h4>
+                {activeCard.description && (
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {activeCard.description}
+                  </p>
+                )}
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
       </div>
     </div>
   );
