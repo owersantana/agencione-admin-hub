@@ -24,30 +24,26 @@ export const MindMapFlowNode = memo(({
   onToggleExpanded,
 }: MindMapFlowNodeProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(data.text);
+  const [editText, setEditText] = useState(data.text || '');
   const inputRef = useRef<HTMLInputElement>(null);
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setEditText(data.text);
+    setEditText(data.text || '');
   }, [data.text]);
-
-  useEffect(() => {
-    if (isEditing && inputRef.current) {
-      // Small delay to ensure the input is rendered
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-          inputRef.current.select();
-        }
-      }, 10);
-    }
-  }, [isEditing]);
 
   const startEditing = useCallback(() => {
     console.log('Starting edit mode for node:', id);
     setIsEditing(true);
-    setEditText(data.text);
+    setEditText(data.text || '');
+    
+    // Force focus after a small delay
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, 50);
   }, [id, data.text]);
 
   const finishEditing = useCallback(() => {
@@ -60,23 +56,21 @@ export const MindMapFlowNode = memo(({
 
   const cancelEditing = useCallback(() => {
     console.log('Canceling edit');
-    setEditText(data.text);
+    setEditText(data.text || '');
     setIsEditing(false);
   }, [data.text]);
 
   const handleNodeDoubleClick = useCallback((e: React.MouseEvent) => {
+    console.log('Double click on node');
     e.preventDefault();
     e.stopPropagation();
-    console.log('Node double click detected');
-    if (!isEditing) {
-      startEditing();
-    }
-  }, [isEditing, startEditing]);
+    startEditing();
+  }, [startEditing]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log('Key pressed in input:', e.key);
+    console.log('Key pressed:', e.key);
     
-    // Prevent ReactFlow from handling these keys
+    // Always stop propagation to prevent ReactFlow from handling
     e.stopPropagation();
     
     if (e.key === 'Enter') {
@@ -87,11 +81,10 @@ export const MindMapFlowNode = memo(({
       cancelEditing();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      console.log('Tab pressed - creating child node');
+      console.log('Tab pressed - finishing edit and creating child');
       finishEditing();
-      // Create child node after a small delay
+      // Create child with delay to ensure edit finishes first
       setTimeout(() => {
-        console.log('Executing onAddChild for node:', id);
         onAddChild(id);
       }, 100);
     }
@@ -101,13 +94,12 @@ export const MindMapFlowNode = memo(({
     setEditText(e.target.value);
   }, []);
 
-  const handleInputBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    console.log('Input lost focus');
-    // Only finish editing if we're not clicking on another part of our node
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    if (!nodeRef.current?.contains(relatedTarget)) {
+  const handleInputBlur = useCallback(() => {
+    console.log('Input blur - finishing edit');
+    // Simple blur handler - just finish editing
+    setTimeout(() => {
       finishEditing();
-    }
+    }, 100);
   }, [finishEditing]);
 
   const handleEditButtonClick = useCallback((e: React.MouseEvent) => {
@@ -194,7 +186,7 @@ export const MindMapFlowNode = memo(({
                 )}
               </button>
             )}
-            <span className="text-center break-words px-2">{data.text}</span>
+            <span className="text-center break-words px-2">{data.text || 'Nó'}</span>
           </div>
         )}
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
@@ -43,6 +42,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
       position: node.position || { x: 400, y: 300 },
       data: {
         ...node.data,
+        text: node.data.text || 'Novo Nó',
         backgroundColor: node.data.backgroundColor || '#3B82F6',
         color: node.data.color || '#FFFFFF',
         fontSize: node.data.fontSize || 14,
@@ -80,6 +80,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         position: node.position || { x: 400, y: 300 },
         data: {
           ...node.data,
+          text: node.data.text || 'Novo Nó',
           backgroundColor: node.data.backgroundColor || '#3B82F6',
           color: node.data.color || '#FFFFFF',
           fontSize: node.data.fontSize || 14,
