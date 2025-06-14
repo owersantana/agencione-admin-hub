@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Eye, Trash2, Share, Edit, Power, Paperclip, Users } from 'lucide-react';
+import { Paperclip, Users } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardCardProps {
@@ -104,55 +102,6 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
           </div>
         </div>
       </CardContent>
-
-      <CardFooter className="pt-3 border-t border-border">
-        <div className="flex items-center justify-center gap-1 w-full">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onAction(board.id, 'view')}
-            className="h-8 px-2 flex-1 sm:flex-none"
-          >
-            <Eye className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onAction(board.id, 'edit')}
-            className="h-8 px-2"
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onAction(board.id, 'share')}
-            className="h-8 px-2"
-          >
-            <Share className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onAction(board.id, 'toggle-active')}
-            className="h-8 px-2"
-          >
-            <Power className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onAction(board.id, 'delete')}
-            className="h-8 px-2 text-destructive hover:text-destructive"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </CardFooter>
     </Card>
   );
 }
