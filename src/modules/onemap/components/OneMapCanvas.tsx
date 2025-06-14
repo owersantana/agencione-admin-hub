@@ -218,7 +218,7 @@ export function OneMapCanvas({ map, onMapUpdate, onMapAction }: OneMapCanvasProp
         >
           <Controls />
           <MiniMap />
-          <Background variant="dots" gap={12} size={1} />
+          <Background variant="cross" gap={12} size={1} />
         </ReactFlow>
       </div>
     </div>

@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Plus, Trash2, Edit3 } from 'lucide-react';
 import { MindMapNodeData } from '../config';
 
-interface MindMapFlowNodeProps extends NodeProps<MindMapNodeData> {
+interface MindMapFlowNodeProps extends NodeProps {
+  data: MindMapNodeData;
   onAddChild: (nodeId: string) => void;
   onDeleteNode: (nodeId: string) => void;
   onUpdateNode: (nodeId: string, updates: Partial<MindMapNodeData>) => void;
