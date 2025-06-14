@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,8 +51,15 @@ export function OneBoardCard({ board, onAction }: OneBoardCardProps) {
   console.log(`Board ${board.name}: ${totalAttachments} anexos, ${totalMembers} membros únicos`);
   console.log('Membros únicos encontrados:', Array.from(uniqueMembers));
 
+  const handleCardClick = () => {
+    onAction(board.id, 'view');
+  };
+
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200 h-48 flex flex-col">
+    <Card 
+      className="group hover:shadow-lg transition-shadow duration-200 h-48 flex flex-col cursor-pointer" 
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="text-base sm:text-lg font-semibold line-clamp-2 flex-1 min-w-0">
