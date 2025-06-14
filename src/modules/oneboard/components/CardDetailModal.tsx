@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image } from 'lucide-react';
+import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image, Edit, Trash2 } from 'lucide-react';
 import { BoardCard, Label as LabelType, Checklist, Member } from '../config';
 import { LabelManager } from './LabelManager';
 import { ChecklistManager } from './ChecklistManager';
@@ -34,6 +34,8 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<Array<{id: string, text: string, author: string, createdAt: string}>>([]);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
 
   React.useEffect(() => {
     if (card) {
@@ -94,6 +96,36 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
       onUpdateCard(card.id, { comments: updatedComments });
       setComment('');
     }
+  };
+
+  const startEditComment = (commentId: string, currentText: string) => {
+    setEditingCommentId(commentId);
+    setEditingCommentText(currentText);
+  };
+
+  const saveEditComment = (commentId: string) => {
+    if (editingCommentText.trim()) {
+      const updatedComments = comments.map(c => 
+        c.id === commentId 
+          ? { ...c, text: editingCommentText.trim() }
+          : c
+      );
+      setComments(updatedComments);
+      onUpdateCard(card.id, { comments: updatedComments });
+    }
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const deleteComment = (commentId: string) => {
+    const updatedComments = comments.filter(c => c.id !== commentId);
+    setComments(updatedComments);
+    onUpdateCard(card.id, { comments: updatedComments });
   };
 
   const handleAddLabel = (label: LabelType) => {
@@ -415,13 +447,60 @@ export function CardDetailModal({ isOpen, onClose, card, onUpdateCard }: CardDet
                   <div className="space-y-3">
                     {comments.map((commentItem) => (
                       <div key={commentItem.id} className="bg-muted p-3 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium text-sm">{commentItem.author}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(commentItem.createdAt).toLocaleDateString('pt-BR')} às {new Date(commentItem.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{commentItem.author}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(commentItem.createdAt).toLocaleDateString('pt-BR')} às {new Date(commentItem.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => startEditComment(commentItem.id, commentItem.text)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              onClick={() => deleteComment(commentItem.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
-                        <p className="text-sm">{commentItem.text}</p>
+                        
+                        {editingCommentId === commentItem.id ? (
+                          <div className="space-y-2">
+                            <DescriptionEditor
+                              value={editingCommentText}
+                              onChange={setEditingCommentText}
+                              placeholder="Editar comentário..."
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => saveEditComment(commentItem.id)}
+                                disabled={!editingCommentText.trim()}
+                              >
+                                Salvar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={cancelEditComment}
+                              >
+                                Cancelar
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm">{commentItem.text}</p>
+                        )}
                       </div>
                     ))}
                   </div>
