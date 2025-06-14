@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Trash2, Edit, MoreHorizontal } from 'lucide-react';
+import { Plus, Trash2, Edit, MoreHorizontal, Calendar, List } from 'lucide-react';
 import { BoardColumn, BoardCard } from '../config';
 import { CardDetailModal } from './CardDetailModal';
 import { useSortable } from '@dnd-kit/sortable';
