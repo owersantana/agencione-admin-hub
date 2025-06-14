@@ -1,5 +1,5 @@
 
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, useRef } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,60 +25,81 @@ export const MindMapFlowNode = memo(({
 }: MindMapFlowNodeProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(data.text);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Update editText when data.text changes
   useEffect(() => {
     setEditText(data.text);
   }, [data.text]);
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log('Double click detected, starting edit mode');
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const startEditing = () => {
+    console.log('Starting edit mode for node:', id);
     setIsEditing(true);
     setEditText(data.text);
   };
 
-  const handleEditSubmit = () => {
-    console.log('Submitting edit:', editText);
-    if (editText.trim()) {
+  const finishEditing = () => {
+    console.log('Finishing edit with text:', editText);
+    if (editText.trim() && editText.trim() !== data.text) {
       onUpdateNode(id, { text: editText.trim() });
     }
     setIsEditing(false);
   };
 
-  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+  const cancelEditing = () => {
+    console.log('Canceling edit');
+    setEditText(data.text);
+    setIsEditing(false);
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Double click detected on node:', id);
+    startEditing();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     console.log('Key pressed:', e.key);
-    e.stopPropagation(); // Prevent event from bubbling up
+    e.stopPropagation();
     
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleEditSubmit();
+      finishEditing();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      setIsEditing(false);
-      setEditText(data.text);
+      cancelEditing();
     } else if (e.key === 'Tab') {
       e.preventDefault();
       console.log('Tab pressed, creating child node');
-      handleEditSubmit();
-      // Use a longer timeout to ensure the edit is saved first
+      finishEditing();
       setTimeout(() => {
         console.log('Calling onAddChild for:', id);
         onAddChild(id);
-      }, 100);
+      }, 50);
     }
   };
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log('Edit button clicked');
-    setIsEditing(true);
-    setEditText(data.text);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditText(e.target.value);
   };
 
   const handleInputBlur = () => {
-    console.log('Input blurred, submitting edit');
-    handleEditSubmit();
+    console.log('Input blurred');
+    finishEditing();
+  };
+
+  const handleEditButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Edit button clicked');
+    startEditing();
   };
 
   const hasChildren = data.children && data.children.length > 0;
@@ -109,13 +130,17 @@ export const MindMapFlowNode = memo(({
       >
         {isEditing ? (
           <Input
+            ref={inputRef}
             value={editText}
-            onChange={(e) => setEditText(e.target.value)}
+            onChange={handleInputChange}
             onBlur={handleInputBlur}
-            onKeyDown={handleEditKeyDown}
-            className="text-center border-none bg-transparent text-white placeholder-white/70"
-            style={{ color: data.color }}
-            autoFocus
+            onKeyDown={handleKeyDown}
+            className="text-center border-none bg-transparent placeholder-white/70 focus:ring-0 focus:ring-offset-0"
+            style={{ 
+              color: data.color,
+              fontSize: `${data.fontSize}px`,
+              fontWeight: data.fontWeight
+            }}
             placeholder="Digite Tab para criar nó filho"
           />
         ) : (
@@ -158,7 +183,7 @@ export const MindMapFlowNode = memo(({
             size="sm"
             variant="secondary"
             className="h-6 w-6 p-0"
-            onClick={handleEditClick}
+            onClick={handleEditButtonClick}
           >
             <Edit3 className="h-3 w-3" />
           </Button>
