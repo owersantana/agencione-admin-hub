@@ -24,6 +24,15 @@ import { ShareCardModal } from './ShareCardModal';
 import { MoveCardModal } from './MoveCardModal';
 import { CopyCardModal } from './CopyCardModal';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+// Define our custom comment type to avoid conflict with DOM Comment
+interface CardComment {
+  id: string;
+  text: string;
+  author: string;
+  createdAt: string;
+}
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -48,7 +57,7 @@ export function CardDetailModal({
   const [description, setDescription] = useState('');
   const [newTag, setNewTag] = useState('');
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState<Array<{id: string, text: string, author: string, createdAt: string}>>([]);
+  const [comments, setComments] = useState<CardComment[]>([]);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
@@ -62,7 +71,7 @@ export function CardDetailModal({
     if (card) {
       setTitle(card.title);
       setDescription(card.description || '');
-      setComments(card.comments || []);
+      setComments((card.comments as CardComment[]) || []);
     }
   }, [card]);
 
@@ -114,7 +123,7 @@ export function CardDetailModal({
 
   const addComment = () => {
     if (comment.trim()) {
-      const newComment = {
+      const newComment: CardComment = {
         id: crypto.randomUUID(),
         text: comment.trim(),
         author: 'Usuário',
@@ -122,7 +131,7 @@ export function CardDetailModal({
       };
       const updatedComments = [...comments, newComment];
       setComments(updatedComments);
-      onUpdateCard(card.id, { comments: updatedComments });
+      onUpdateCard(card.id, { comments: updatedComments as any });
       setComment('');
     }
   };
@@ -140,7 +149,7 @@ export function CardDetailModal({
           : c
       );
       setComments(updatedComments);
-      onUpdateCard(card.id, { comments: updatedComments });
+      onUpdateCard(card.id, { comments: updatedComments as any });
     }
     setEditingCommentId(null);
     setEditingCommentText('');
@@ -154,7 +163,7 @@ export function CardDetailModal({
   const deleteComment = (commentId: string) => {
     const updatedComments = comments.filter(c => c.id !== commentId);
     setComments(updatedComments);
-    onUpdateCard(card.id, { comments: updatedComments });
+    onUpdateCard(card.id, { comments: updatedComments as any });
   };
 
   const handleShareCard = () => {
@@ -746,7 +755,7 @@ export function CardDetailModal({
         isOpen={isArchiveModalOpen}
         onClose={() => setIsArchiveModalOpen(false)}
         onConfirm={handleArchiveCard}
-        title="Arquivar Card"
+        title="Arquivar Card"  
         description={`Tem certeza que deseja arquivar o card "${card.title}"? Você poderá restaurá-lo posteriormente.`}
         confirmText="Arquivar"
         cancelText="Cancelar"

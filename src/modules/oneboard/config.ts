@@ -73,6 +73,13 @@ export interface Attachment {
   uploadedBy: string;
 }
 
+export interface CardComment {
+  id: string;
+  text: string;
+  author: string;
+  createdAt: string;
+}
+
 export interface BoardCard {
   id: string;
   title: string;
@@ -83,7 +90,7 @@ export interface BoardCard {
   members?: Member[];
   checklists?: Checklist[];
   attachments?: Attachment[];
-  comments?: Comment[];
+  comments?: CardComment[];
   dueDate?: string;
   reminder?: string;
   completed?: boolean;
