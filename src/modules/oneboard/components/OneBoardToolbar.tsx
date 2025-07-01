@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft, Grid, Kanban } from 'lucide-react';
+import { Plus, ArrowLeft, Grid, Kanban, Trello } from 'lucide-react';
 import { Board } from '../config';
 
 interface OneBoardToolbarProps {
@@ -20,10 +20,11 @@ export function OneBoardToolbar({
   onBackToGrid
 }: OneBoardToolbarProps) {
   return (
-    <div className="border-b border-border bg-background p-3 sm:p-4">
+    <div className="border-b border-border bg-background p-2 sm:p-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="min-w-0 flex-1 flex items-center gap-2">
+            <Trello className="h-5 w-5 text-blue-600" />
             <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
               OneBoard
             </h1>

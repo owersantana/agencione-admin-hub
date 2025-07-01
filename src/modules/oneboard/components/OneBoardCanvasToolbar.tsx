@@ -9,7 +9,8 @@ import {
   Filter,
   Edit,
   Power,
-  Trash2
+  Trash2,
+  ArrowLeft
 } from 'lucide-react';
 import { Board } from '../config';
 import { useToast } from '@/hooks/use-toast';
@@ -114,6 +115,10 @@ export function OneBoardCanvasToolbar({
     setShowDeleteModal(false);
   };
 
+  const handleBackToGrid = () => {
+    handleBoardAction('back');
+  };
+
   const getFavoriteStatus = () => {
     const favoritesKey = 'oneboard-favorites';
     const savedFavorites = localStorage.getItem(favoritesKey);
@@ -133,7 +138,7 @@ export function OneBoardCanvasToolbar({
 
   return (
     <>
-      <div className="border-b border-border bg-background p-3 sm:p-4">
+      <div className="border-b border-border bg-background p-2 sm:p-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {isEditingTitle ? (
@@ -156,6 +161,16 @@ export function OneBoardCanvasToolbar({
           </div>
 
           <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleBackToGrid}
+              className="p-2"
+              title="Voltar"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+
             <Button 
               variant="ghost" 
               size="sm"

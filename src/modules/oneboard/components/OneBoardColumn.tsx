@@ -160,7 +160,7 @@ function SortableCard({
               />
             ) : (
               <h4 
-                className="text-sm font-medium line-clamp-2 flex-1"
+                className={`text-sm font-medium line-clamp-2 flex-1 ${card.completed ? 'line-through text-muted-foreground' : ''}`}
                 onDoubleClick={handleDoubleClick}
               >
                 {card.title}

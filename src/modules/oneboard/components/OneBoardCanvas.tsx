@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Board, BoardColumn, BoardCard } from '../config';
 import { OneBoardCanvasToolbar } from './OneBoardCanvasToolbar';
@@ -160,6 +159,14 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
     }
   };
 
+  const handleBoardAction = (boardId: string, action: string) => {
+    if (action === 'back' && onBoardAction) {
+      onBoardAction(boardId, 'back');
+    } else if (onBoardAction) {
+      onBoardAction(boardId, action);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-muted/20">
       {/* Fixed Toolbar */}
@@ -167,7 +174,7 @@ export function OneBoardCanvas({ board, onBoardUpdate, onBoardAction, initialCol
         <OneBoardCanvasToolbar 
           board={board}
           onBoardUpdate={onBoardUpdate}
-          onBoardAction={onBoardAction}
+          onBoardAction={handleBoardAction}
         />
       </div>
 
