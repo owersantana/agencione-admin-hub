@@ -79,16 +79,17 @@ export interface BoardCard {
   description?: string;
   columnId: string;
   position: number;
-  assignedTo?: string;
-  priority?: 'low' | 'medium' | 'high';
-  dueDate?: string;
-  tags?: string[];
   labels?: Label[];
-  checklists?: Checklist[];
-  coverImage?: string;
   members?: Member[];
+  checklists?: Checklist[];
   attachments?: Attachment[];
-  comments?: Array<{id: string, text: string, author: string, createdAt: string}>;
+  comments?: Comment[];
+  dueDate?: string;
+  reminder?: string;
+  completed?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  tags?: string[];
+  coverImage?: string;
   createdAt: string;
   updatedAt: string;
 }

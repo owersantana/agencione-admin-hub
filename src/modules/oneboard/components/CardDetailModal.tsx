@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image, Edit, Trash2 } from 'lucide-react';
+import { CalendarDays, Tag, X, User, List, Calendar, Paperclip, Share, Archive, Copy, Move, Image, Edit, Trash2, Bell } from 'lucide-react';
 import { BoardCard, Label as LabelType, Checklist, Member, BoardColumn } from '../config';
 import { LabelManager } from './LabelManager';
 import { ChecklistManager } from './ChecklistManager';
@@ -102,6 +102,14 @@ export function CardDetailModal({
       case 'high': return 'Alta';
       default: return 'Nenhuma';
     }
+  };
+
+  const toggleCompleted = () => {
+    onUpdateCard(card.id, { completed: !card.completed });
+    toast({
+      title: card.completed ? "Tarefa reaberta" : "Tarefa concluída",
+      description: card.completed ? "A tarefa foi marcada como pendente." : "A tarefa foi marcada como concluída."
+    });
   };
 
   const addComment = () => {
@@ -199,6 +207,10 @@ export function CardDetailModal({
 
   const handleDateChange = (date: string | undefined) => {
     onUpdateCard(card.id, { dueDate: date });
+  };
+
+  const handleReminderChange = (reminder: string | undefined) => {
+    onUpdateCard(card.id, { reminder });
   };
 
   const handleCoverImageChange = (url: string | undefined) => {
@@ -324,7 +336,20 @@ export function CardDetailModal({
 
               <div className="flex-1 p-6 overflow-y-auto min-h-0">
                 <DialogHeader className="mb-6">
-                  <DialogTitle className="text-xl">{card.title}</DialogTitle>
+                  <div className="flex items-center justify-between">
+                    <DialogTitle className="text-xl">{card.title}</DialogTitle>
+                    <Button
+                      variant={card.completed ? "default" : "outline"}
+                      size="sm"
+                      onClick={toggleCompleted}
+                      className={cn(
+                        "ml-4",
+                        card.completed && "bg-green-600 hover:bg-green-700"
+                      )}
+                    >
+                      {card.completed ? "Concluída" : "Marcar como concluída"}
+                    </Button>
+                  </div>
                 </DialogHeader>
 
                 <div className="space-y-6">
@@ -335,6 +360,7 @@ export function CardDetailModal({
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Título do card"
+                      className={cn(card.completed && "line-through opacity-60")}
                     />
                   </div>
 
@@ -463,6 +489,19 @@ export function CardDetailModal({
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
                         {new Date(card.dueDate).toLocaleDateString('pt-BR')}
+                        {card.reminder && (
+                          <div className="flex items-center gap-1 ml-2 text-blue-600">
+                            <Bell className="h-3 w-3" />
+                            <span className="text-xs">
+                              {card.reminder === '0' ? 'Lembrete no momento' : 
+                               card.reminder === '15' ? '15 min antes' :
+                               card.reminder === '30' ? '30 min antes' :
+                               card.reminder === '60' ? '1h antes' :
+                               card.reminder === '1440' ? '1 dia antes' :
+                               card.reminder === '10080' ? '1 semana antes' : 'Lembrete ativo'}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -664,7 +703,9 @@ export function CardDetailModal({
                     <h4 className="font-medium">Datas</h4>
                     <DatePicker
                       date={card.dueDate}
+                      reminder={card.reminder}
                       onDateChange={handleDateChange}
+                      onReminderChange={handleReminderChange}
                     />
                   </div>
                 )}
