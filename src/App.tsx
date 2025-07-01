@@ -10,6 +10,7 @@ import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import SecurityCode from "./pages/auth/SecurityCode";
 import NewPassword from "./pages/auth/NewPassword";
+import Block from "./pages/auth/Block";
 
 // Dashboard pages
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/security-code" element={<SecurityCode />} />
           <Route path="/auth/new-password" element={<NewPassword />} />
+          <Route path="/auth/block" element={<Block />} />
           
           {/* Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
