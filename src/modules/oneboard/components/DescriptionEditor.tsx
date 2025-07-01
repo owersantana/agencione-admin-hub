@@ -1,8 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Bold, Italic, Underline, List, Link, Code, Image, Eye, Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Bold, Italic, Link, Image, List, ListOrdered } from 'lucide-react';
 
 interface DescriptionEditorProps {
   value: string;
@@ -11,15 +14,16 @@ interface DescriptionEditorProps {
 }
 
 export function DescriptionEditor({ value, onChange, placeholder }: DescriptionEditorProps) {
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const insertFormat = (before: string, after: string = '') => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+  const insertText = (before: string, after: string = '') => {
+    if (!textareaRef.current) return;
+    
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
     const selectedText = value.substring(start, end);
     const newText = value.substring(0, start) + before + selectedText + after + value.substring(end);
     
@@ -27,188 +31,110 @@ export function DescriptionEditor({ value, onChange, placeholder }: DescriptionE
     
     // Restore cursor position
     setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + before.length, end + before.length);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+      }
     }, 0);
   };
 
-  const insertText = (text: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const newText = value.substring(0, start) + text + value.substring(end);
-    
-    onChange(newText);
-    
-    // Position cursor after inserted text
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + text.length, start + text.length);
-    }, 0);
-  };
-
-  const renderMarkdown = (text: string) => {
-    let html = text;
-    
-    // Bold
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // Italic
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Underline
-    html = html.replace(/<u>(.*?)<\/u>/g, '<u>$1</u>');
-    
-    // Code
-    html = html.replace(/`(.*?)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>');
-    
-    // Links
-    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-blue-600 underline" target="_blank" rel="noopener">$1</a>');
-    
-    // Images
-    html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded" />');
-    
-    // Lists
-    html = html.replace(/^- (.+)$/gm, '<li class="ml-4">• $1</li>');
-    
-    // Line breaks
-    html = html.replace(/\n/g, '<br />');
-    
-    return html;
-  };
-
-  const formatButtons = [
-    {
-      icon: Bold,
-      tooltip: 'Negrito',
-      action: () => insertFormat('**', '**')
-    },
-    {
-      icon: Italic,
-      tooltip: 'Itálico',
-      action: () => insertFormat('*', '*')
-    },
-    {
-      icon: Underline,
-      tooltip: 'Sublinhado',
-      action: () => insertFormat('<u>', '</u>')
-    },
-    {
-      icon: List,
-      tooltip: 'Lista',
-      action: () => insertText('\n- ')
-    },
-    {
-      icon: Link,
-      tooltip: 'Link',
-      action: () => insertFormat('[', '](url)')
-    },
-    {
-      icon: Code,
-      tooltip: 'Código',
-      action: () => insertFormat('`', '`')
-    },
-    {
-      icon: Image,
-      tooltip: 'Imagem',
-      action: () => insertFormat('![alt](', ')')
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = e.target?.result as string;
+        insertText(`![Imagem](${imageData})`);
+        setShowImageUpload(false);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const insertImageUrl = () => {
+    if (imageUrl.trim()) {
+      insertText(`![Imagem](${imageUrl.trim()})`);
+      setImageUrl('');
+      setShowImageUpload(false);
+    }
+  };
+
+  const toolbarButtons = [
+    { icon: Bold, action: () => insertText('**', '**'), title: 'Negrito' },
+    { icon: Italic, action: () => insertText('*', '*'), title: 'Itálico' },
+    { icon: Link, action: () => insertText('[', '](url)'), title: 'Link' },
+    { icon: List, action: () => insertText('- '), title: 'Lista' },
+    { icon: ListOrdered, action: () => insertText('1. '), title: 'Lista numerada' },
   ];
 
   return (
     <div className="space-y-2">
-      {/* Mini Toolbar */}
-      <div className="flex items-center gap-1 p-2 border rounded-md bg-muted/30">
-        <div className="flex items-center gap-1">
-          {formatButtons.map((button, index) => (
+      <div className="flex items-center gap-1 p-2 border rounded-t-md bg-muted/50">
+        {toolbarButtons.map((button, index) => (
+          <Button
+            key={index}
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={button.action}
+            title={button.title}
+          >
+            <button.icon className="h-3 w-3" />
+          </Button>
+        ))}
+        
+        <Popover open={showImageUpload} onOpenChange={setShowImageUpload}>
+          <PopoverTrigger asChild>
             <Button
-              key={index}
-              type="button"
               variant="ghost"
               size="sm"
               className="h-7 w-7 p-0"
-              onClick={button.action}
-              title={button.tooltip}
+              title="Inserir imagem"
             >
-              <button.icon className="h-3 w-3" />
+              <Image className="h-3 w-3" />
             </Button>
-          ))}
-        </div>
-        
-        <div className="w-px h-4 bg-border mx-1" />
-        
-        {/* Emoji Button */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-sm"
-          onClick={() => insertText('😊')}
-          title="Emoji"
-        >
-          😊
-        </Button>
-        
-        {/* Mention Button */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs font-medium"
-          onClick={() => insertText('@')}
-          title="Menção"
-        >
-          @
-        </Button>
-
-        <div className="w-px h-4 bg-border mx-1" />
-
-        {/* View Mode Toggle */}
-        <Button
-          type="button"
-          variant={viewMode === 'edit' ? 'default' : 'ghost'}
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={() => setViewMode('edit')}
-          title="Modo Edição"
-        >
-          <Edit className="h-3 w-3" />
-        </Button>
-        <Button
-          type="button"
-          variant={viewMode === 'preview' ? 'default' : 'ghost'}
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={() => setViewMode('preview')}
-          title="Visualizar"
-        >
-          <Eye className="h-3 w-3" />
-        </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="image-file">Upload de arquivo</Label>
+                <Input
+                  id="image-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  ref={fileInputRef}
+                />
+              </div>
+              
+              <div className="text-center text-sm text-muted-foreground">ou</div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="image-url">URL da imagem</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="image-url"
+                    placeholder="https://exemplo.com/imagem.jpg"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                  />
+                  <Button onClick={insertImageUrl} size="sm">
+                    Inserir
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
-
-      {/* Content Area */}
-      {viewMode === 'edit' ? (
-        <Textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={6}
-          className="resize-none"
-        />
-      ) : (
-        <div 
-          className="min-h-[144px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(value) || '<span class="text-muted-foreground">Nenhum conteúdo para visualizar</span>' }}
-        />
-      )}
       
-      {/* Format Help */}
-      <p className="text-xs text-muted-foreground">
-        Dica: Use **negrito**, *itálico*, `código`, [link](url) ou - para listas. Clique em visualizar para ver o resultado.
-      </p>
+      <Textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="min-h-[120px] rounded-t-none border-t-0 resize-none"
+      />
     </div>
   );
 }

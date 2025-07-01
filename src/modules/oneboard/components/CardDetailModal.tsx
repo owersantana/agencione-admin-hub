@@ -53,8 +53,6 @@ export function CardDetailModal({
   onMoveCard,
   onCopyCard
 }: CardDetailModalProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
   const [newTag, setNewTag] = useState('');
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<CardComment[]>([]);
@@ -69,20 +67,19 @@ export function CardDetailModal({
 
   React.useEffect(() => {
     if (card) {
-      setTitle(card.title);
-      setDescription(card.description || '');
       setComments((card.comments as CardComment[]) || []);
     }
   }, [card]);
 
   if (!card) return null;
 
-  const handleSave = () => {
-    onUpdateCard(card.id, {
-      title: title.trim(),
-      description: description.trim(),
-    });
-    onClose();
+  // Real-time update functions
+  const handleTitleChange = (newTitle: string) => {
+    onUpdateCard(card.id, { title: newTitle });
+  };
+
+  const handleDescriptionChange = (newDescription: string) => {
+    onUpdateCard(card.id, { description: newDescription });
   };
 
   const addTag = () => {
@@ -366,8 +363,8 @@ export function CardDetailModal({
                     <Label htmlFor="card-title">Título</Label>
                     <Input
                       id="card-title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      value={card.title}
+                      onChange={(e) => handleTitleChange(e.target.value)}
                       placeholder="Título do card"
                       className={cn(card.completed && "line-through opacity-60")}
                     />
@@ -376,8 +373,8 @@ export function CardDetailModal({
                   <div className="space-y-2">
                     <Label htmlFor="card-description">Descrição</Label>
                     <DescriptionEditor
-                      value={description}
-                      onChange={setDescription}
+                      value={card.description || ''}
+                      onChange={handleDescriptionChange}
                       placeholder="Adicione uma descrição mais detalhada..."
                     />
                   </div>
@@ -619,12 +616,9 @@ export function CardDetailModal({
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-4 border-t border-border">
+                  <div className="flex justify-end pt-4 border-t border-border">
                     <Button variant="outline" onClick={onClose}>
-                      Cancelar
-                    </Button>
-                    <Button onClick={handleSave}>
-                      Salvar
+                      Fechar
                     </Button>
                   </div>
                 </div>
