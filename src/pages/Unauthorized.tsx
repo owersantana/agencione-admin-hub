@@ -1,27 +1,21 @@
 
-import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, LogIn, ArrowLeft } from "lucide-react";
 
-const NotFound = () => {
-  const location = useLocation();
-
+const Unauthorized = () => {
   useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+    console.error("401 Error: User attempted to access unauthorized content");
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
       <div className="text-center max-w-md mx-auto px-6">
         <div className="mb-8">
-          <h1 className="text-9xl font-bold text-gray-200 mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Página não encontrada</h2>
+          <h1 className="text-9xl font-bold text-red-200 mb-4">401</h1>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Acesso não autorizado</h2>
           <p className="text-gray-600 mb-8">
-            A página que você está procurando não existe ou foi movida.
+            Você não tem permissão para acessar esta página. Faça login ou verifique suas credenciais.
           </p>
         </div>
         
@@ -35,7 +29,15 @@ const NotFound = () => {
             Voltar
           </Button>
           <Button 
+            onClick={() => window.location.href = "/auth/login"}
+            className="flex items-center gap-2"
+          >
+            <LogIn className="h-4 w-4" />
+            Fazer Login
+          </Button>
+          <Button 
             onClick={() => window.location.href = "/"}
+            variant="outline"
             className="flex items-center gap-2"
           >
             <Home className="h-4 w-4" />
@@ -47,4 +49,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default Unauthorized;

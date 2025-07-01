@@ -15,7 +15,11 @@ import Block from "./pages/auth/Block";
 // Dashboard pages
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+
+// Error pages
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
+import ServerError from "./pages/ServerError";
 
 // Module pages
 import OneDisk from "./modules/onedisk/pages/OneDisk";
@@ -40,6 +44,10 @@ const App = () => (
           <Route path="/auth/security-code" element={<SecurityCode />} />
           <Route path="/auth/new-password" element={<NewPassword />} />
           <Route path="/auth/block" element={<Block />} />
+          
+          {/* Error routes */}
+          <Route path="/401" element={<Unauthorized />} />
+          <Route path="/500" element={<ServerError />} />
           
           {/* Dashboard routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
