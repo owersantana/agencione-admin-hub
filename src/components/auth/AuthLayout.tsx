@@ -18,7 +18,14 @@ export function AuthLayout({ children, icon, title, description, showTerms = tru
         {/* Header com logo */}
         <div className="p-6 border-b border-border">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-primary-700">{BRAND_CONFIG.name}</h1>
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <img 
+                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=40&h=40&fit=crop&crop=center" 
+                alt="Logo" 
+                className="w-10 h-10 rounded-lg object-cover shadow-md"
+              />
+              <h1 className="text-2xl font-bold text-primary-700">{BRAND_CONFIG.name}</h1>
+            </div>
           </div>
         </div>
 
