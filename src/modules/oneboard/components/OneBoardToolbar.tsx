@@ -23,26 +23,26 @@ export function OneBoardToolbar({
     <div className="border-b border-border bg-background p-3 sm:p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          {activeBoard && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBackToGrid}
-              className="flex items-center gap-2 px-2 sm:px-3"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Voltar</span>
-            </Button>
-          )}
-
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
-              {activeBoard ? activeBoard.name : 'OneBoard'}
+              OneBoard
             </h1>
           </div>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
+          {activeBoard && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBackToGrid}
+              className="p-2"
+              title="Voltar"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+
           {!activeBoard && (
             <>
               <div className="flex items-center border border-border rounded-lg p-1">
