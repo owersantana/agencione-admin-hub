@@ -25,6 +25,7 @@ import { MoveCardModal } from './MoveCardModal';
 import { CopyCardModal } from './CopyCardModal';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 // Define our custom comment type to avoid conflict with DOM Comment
 interface CardComment {
@@ -598,7 +599,7 @@ export function CardDetailModal({
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm">{commentItem.text}</p>
+                            <MarkdownRenderer content={commentItem.text} />
                           )}
                         </div>
                       ))}

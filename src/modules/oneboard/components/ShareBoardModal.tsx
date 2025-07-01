@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Check, Mail, Link, Lock } from 'lucide-react';
+import { Copy, Check, Mail, Link } from 'lucide-react';
 import { Board } from '../config';
 
 interface ShareBoardModalProps {
@@ -21,19 +21,11 @@ interface ShareBoardModalProps {
 }
 
 export function ShareBoardModal({ isOpen, onClose, board }: ShareBoardModalProps) {
-  const [shareLink, setShareLink] = useState('');
-  const [password, setPassword] = useState('');
   const [emails, setEmails] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
-  const [passwordGenerated, setPasswordGenerated] = useState(false);
 
   React.useEffect(() => {
     if (board && isOpen) {
-      // Generate share link
-      const link = `${window.location.origin}/shared/board/${board.id}`;
-      setShareLink(link);
-      setPassword('');
-      setPasswordGenerated(false);
       setLinkCopied(false);
     }
   }, [board, isOpen]);
@@ -48,16 +40,6 @@ export function ShareBoardModal({ isOpen, onClose, board }: ShareBoardModalProps
     }
   };
 
-  const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setPassword(result);
-    setPasswordGenerated(true);
-  };
-
   const sendByEmail = () => {
     const emailList = emails.split(',').map(email => email.trim()).filter(email => email);
     if (emailList.length > 0) {
@@ -68,6 +50,8 @@ export function ShareBoardModal({ isOpen, onClose, board }: ShareBoardModalProps
   };
 
   if (!board) return null;
+
+  const shareLink = `${window.location.origin}/board/${board.id}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -108,33 +92,6 @@ export function ShareBoardModal({ isOpen, onClose, board }: ShareBoardModalProps
                   {linkCopied ? 'Copiado!' : 'Copiar'}
                 </Button>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Senha de Acesso (Opcional)</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Digite uma senha ou gere uma"
-                  className="flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={generatePassword}
-                  className="flex items-center gap-2"
-                >
-                  <Lock className="h-4 w-4" />
-                  Gerar
-                </Button>
-              </div>
-              {passwordGenerated && (
-                <p className="text-sm text-muted-foreground">
-                  Senha gerada! Compartilhe com as pessoas autorizadas.
-                </p>
-              )}
             </div>
           </TabsContent>
           
