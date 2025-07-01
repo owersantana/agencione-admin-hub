@@ -114,14 +114,12 @@ function OneBoard() {
         }
         break;
       case 'delete':
-        if (confirm('Tem certeza que deseja excluir este board?')) {
-          const filteredBoards = boards.filter(b => b.id !== boardId);
-          setBoards(filteredBoards);
-          saveToStorage(filteredBoards);
-          if (activeBoard?.id === boardId) {
-            setActiveBoard(null);
-            setViewMode('grid');
-          }
+        const filteredBoards = boards.filter(b => b.id !== boardId);
+        setBoards(filteredBoards);
+        saveToStorage(filteredBoards);
+        if (activeBoard?.id === boardId) {
+          setActiveBoard(null);
+          setViewMode('grid');
         }
         break;
     }
